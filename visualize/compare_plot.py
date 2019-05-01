@@ -16,7 +16,7 @@ class VAEPlotter:
             batch_size, 28, 28, 1), batch_size=batch_size)
 
         fig, axes = plt.subplots(
-            4, 4, sharex=True, sharey=True, figsize=(7, 7))
+            4, 4, sharex=True, sharey=True, figsize=(7, 10))
 
         for ind, ax in enumerate(axes.flatten()):
             if ind % 2 == 0:
@@ -27,18 +27,15 @@ class VAEPlotter:
                 ax.imshow(
                     train_images[ind - 1].reshape(28, 28), interpolation=None)
 
-        fig.suptitle("Train reconstructions")
+        fig.suptitle("Train reconstructions\n\n")
         fig.tight_layout()
         plt.show()
-
-        fig, axes = plt.subplots(
-            4, 4, sharex=True, sharey=True, figsize=(7, 7))
 
         reco = self.model.predict(test_images.reshape(
             batch_size, 28, 28, 1), batch_size=batch_size)
 
         fig, axes = plt.subplots(
-            4, 4, sharex=True, sharey=True, figsize=(7, 7))
+            4, 4, sharex=True, sharey=True, figsize=(7, 10))
 
         for ind, ax in enumerate(axes.flatten()):
             if ind % 2 == 0:
@@ -49,6 +46,6 @@ class VAEPlotter:
                 ax.imshow(
                     test_images[ind - 1].reshape(28, 28), interpolation=None)
 
-        fig.suptitle("Test reconstructions")
+        fig.suptitle("Test reconstructions\n\n")
         fig.tight_layout()
         plt.show()
