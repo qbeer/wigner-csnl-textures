@@ -5,7 +5,7 @@ class ModelTrainer:
     def __init__(self, model, data_generator, loss_fn):
         assert loss_fn in str(["normal", "normalDiag", "bernouilli", "binary"]),\
             "Loss function should be in [\'normal\', \'normalDiag\', \'bernoulli\', \'binary\']"
-        self.model = model.get_compiled_model(loss_fn=loss_fn)
+        self.model, self.generator = model.get_compiled_model(loss_fn=loss_fn)
         self.data_generator = data_generator
         print(self.model.summary())
 

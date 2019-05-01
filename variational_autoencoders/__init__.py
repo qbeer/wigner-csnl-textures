@@ -1,0 +1,2 @@
+from .dense_variational_autoencoder import DenseVAE
+from .convolutional_variational_autoencoder import ConvolutionalVAE
