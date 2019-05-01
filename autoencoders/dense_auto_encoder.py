@@ -3,8 +3,9 @@ from keras.layers import Input, Dense, PReLU
 from keras.models import Model
 from keras.optimizers import Adam
 
+
 class DenseAutoEncoder(AutoEncoder):
-    
+
     def _encoder(self):
         input_img = Input(shape=self.input_shape)
         x = Dense(512)(input_img)
@@ -13,7 +14,7 @@ class DenseAutoEncoder(AutoEncoder):
         x = PReLU()(x)
         encoder = Model(input_img, x)
         return encoder
-    
+
     def _decoder(self):
         latent_input = Input(shape=(self.latent_dim, ))
         x = Dense(256)(latent_input)
