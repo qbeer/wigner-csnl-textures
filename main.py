@@ -14,6 +14,13 @@ conv_ae = ConvolutionalAutoEncoder(input_shape=(28, 28, 1), latent_dim=16*2)
 conv_trainer = ModelTrainer(conv_ae, datagen, "normal")
 #conv_trainer.fit(5, 3)
 
-dense_vae = DenseVAE(input_shape=(784,), latent_dim=128, BATCH_SIZE=70)
+dense_vae = ConvolutionalVAE(input_shape=(28, 28, 1), latent_dim=16*1, BATCH_SIZE=70)
 
 dense_vae_trainer = ModelTrainer(dense_vae, datagen, "normal")
+dense_vae_trainer.fit(1, 2)
+
+from visualize import VAEPlotter
+
+plotter = VAEPlotter(dense_vae_trainer.model, dense_vae_trainer.generator, datagen)
+
+plotter.grid_plot()
