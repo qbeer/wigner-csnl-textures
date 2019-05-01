@@ -32,7 +32,7 @@ class AutoEncoder:
         self.loss_fn = self._get_loss(loss_fn)
 
         model = Model(input_img, decoded)
-        model.compile(optimizer=Adam(lr=1e-5, decay=0.05), loss=self.loss_fn)
+        model.compile(optimizer=Adam(lr=1e-3, decay=0.05), loss=self.loss_fn)
         return model, model
 
     def _get_loss(self, loss_fn):
