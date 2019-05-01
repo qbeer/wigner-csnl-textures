@@ -31,7 +31,7 @@ class VAEPlotter:
         fig.tight_layout()
         plt.show()
 
-        reco = self.model.predict(test_images.reshape(
+        reco = self.model.predict(test_images[:batch_size].reshape(
             batch_size, 28, 28, 1), batch_size=batch_size)
 
         fig, axes = plt.subplots(
