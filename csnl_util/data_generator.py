@@ -19,7 +19,6 @@ class DataGenerator:
     def flattened_flow(self):
         def train_generator(_it):
             image_dim = np.prod(self.IMAGE_SHAPE)
-            print("Image dim : ", image_dim)
             while True:
                 batch_x, batch_y = next(_it)
                 yield batch_x.reshape(batch_x.shape[0], image_dim), batch_y.reshape(batch_y.shape[0], image_dim)
