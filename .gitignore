@@ -3,4 +3,5 @@ csnl/data/textures*
 csnl/data/whitened_*
 .vscode/
 dist/
+csnl_vae_olaralex.egg-info/
 

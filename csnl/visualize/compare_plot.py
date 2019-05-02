@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 
 
 class VAEPlotter:
@@ -8,44 +9,40 @@ class VAEPlotter:
         self.datagen = datagen
 
     def grid_plot(self):
+        input_shape = self.model.layers[0].output_shape
+
         train_images, _ = next(self.datagen.flow())
         test_images, _ = self.datagen.validation_data()
         batch_size = train_images.shape[0]
 
-        reco = self.model.predict(train_images.reshape(
-            batch_size, 28, 28, 1), batch_size=batch_size)
+        reco_train = self.model.predict(train_images.reshape(
+            *input_shape), batch_size=batch_size)
 
-        fig, axes = plt.subplots(
-            4, 4, sharex=True, sharey=True, figsize=(7, 10))
+        reco_test = self.model.predict(test_images[:batch_size].reshape(
+            *input_shape), batch_size=batch_size)
 
-        for ind, ax in enumerate(axes.flatten()):
-            if ind % 2 == 0:
-                ax.set_title('Reconstructed')
-                ax.imshow(reco[ind].reshape(28, 28), interpolation=None)
-            else:
-                ax.set_title(' <- Original')
-                ax.imshow(
-                    train_images[ind - 1].reshape(28, 28), interpolation=None)
+        reco = [reco_train, reco_test]
+        images = [train_images, test_images]
 
-        fig.suptitle("Train reconstructions\n\n")
-        fig.tight_layout()
-        plt.show()
+        fig = plt.figure(figsize=(14, 7))
+        outer = gridspec.GridSpec(1, 2, wspace=0.1, hspace=0.1)
 
-        reco = self.model.predict(test_images[:batch_size].reshape(
-            batch_size, 28, 28, 1), batch_size=batch_size)
+        for outer_ind in range(2):
+            inner = gridspec.GridSpecFromSubplotSpec(4, 4,
+                                                     subplot_spec=outer[outer_ind], wspace=0.095, hspace=0.095)
+            for inner_ind in range(16):
+                ax = plt.Subplot(fig, inner[inner_ind])
+                if inner_ind % 2 == 0:
+                    ax.set_title('Reconstructed')
+                    ax.imshow(reco[outer_ind][inner_ind].reshape(
+                        28, 28), interpolation=None)
+                else:
+                    ax.set_title(' <- Original')
+                    ax.imshow(images[outer_ind][inner_ind -
+                                                1].reshape(28, 28), interpolation=None)
+                ax.set_xticks([])
+                ax.set_yticks([])
+                fig.add_subplot(ax)
 
-        fig, axes = plt.subplots(
-            4, 4, sharex=True, sharey=True, figsize=(7, 10))
-
-        for ind, ax in enumerate(axes.flatten()):
-            if ind % 2 == 0:
-                ax.set_title('Reconstructed')
-                ax.imshow(reco[ind].reshape(28, 28), interpolation=None)
-            else:
-                ax.set_title(' <- Original')
-                ax.imshow(
-                    test_images[ind - 1].reshape(28, 28), interpolation=None)
-
-        fig.suptitle("Test reconstructions\n\n")
-        fig.tight_layout()
+        fig.suptitle("Train and test reconstructions\n\n")
         plt.show()
