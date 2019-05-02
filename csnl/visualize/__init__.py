@@ -1,3 +1,3 @@
 from __future__ import absolute_import
 
-from . import csnl
+from .compare_plot import VAEPlotter

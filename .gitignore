@@ -1,4 +1,6 @@
-data/natural_*
-data/textures*
-data/whitened_*
+csnl/data/natural_*
+csnl/data/textures*
+csnl/data/whitened_*
 .vscode/
+dist/
+

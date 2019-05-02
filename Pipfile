@@ -6,6 +6,7 @@ verify_ssl = true
 [dev-packages]
 pylint = "*"
 autopep8 = "*"
+distutils-pytest = "*"
 
 [packages]
 keras = "*"
@@ -13,6 +14,9 @@ tensorflow = "*"
 sklearn = "*"
 tensorflow-probability = "*"
 matplotlib = "*"
+setuptools = "*"
+wheel = "*"
+twine = "*"
 
 [requires]
 python_version = "3.7"

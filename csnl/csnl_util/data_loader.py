@@ -6,7 +6,7 @@ import os
 
 class DataLoader:
     def __init__(self, file_path):
-        with open(os.getcwd() + file_path, 'rb') as f:
+        with open(file_path, 'rb') as f:
             self.data = pickle.load(f)
 
     def train_test_split(self):
