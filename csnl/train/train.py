@@ -2,12 +2,12 @@ import matplotlib.pyplot as plt
 
 
 class ModelTrainer:
-    def __init__(self, model, data_generator, loss_fn):
+    def __init__(self, model, data_generator, loss_fn, lr, decay, beta=1e-12):
         assert loss_fn in str(["normal", "normalDiag", "bernouilli", "binary"]),\
             "Loss function should be in [\'normal\', \'normalDiag\', \'bernoulli\', \'binary\']"
-        self.model, self.generator = model.get_compiled_model(loss_fn=loss_fn)
+        self.model, self.generator = model.get_compiled_model(loss_fn=loss_fn, lr=lr, decay=decay)
         self.data_generator = data_generator
-        print(self.model.summary())
+        self.model.summary()
 
     def fit(self, EPOCHS, STEPS):
         try:
