@@ -2,10 +2,11 @@ import matplotlib.pyplot as plt
 
 
 class ModelTrainer:
-    def __init__(self, model, data_generator, loss_fn, lr, decay, beta=1e-12):
+    def __init__(self, model, data_generator, loss_fn="normal", lr=1e-3, decay=5e-5, beta=1e-12):
         assert loss_fn in str(["normal", "normalDiag", "bernouilli", "binary"]),\
             "Loss function should be in [\'normal\', \'normalDiag\', \'bernoulli\', \'binary\']"
-        self.model, self.generator = model.get_compiled_model(loss_fn=loss_fn, lr=lr, decay=decay)
+        args = loss_fn, lr, decay, beta
+        self.model, self.generator = model.get_compiled_model(*args)
         self.data_generator = data_generator
         self.model.summary()
 

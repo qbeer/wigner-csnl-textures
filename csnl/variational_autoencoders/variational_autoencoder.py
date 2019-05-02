@@ -38,7 +38,9 @@ class VariationalAutoEncoder:
         elif loss_fn == "normalDiag":
             return self._normalDiag
 
-    def get_compiled_model(self, loss_fn=None, lr=1e-3, decay=5e-5, beta=1e-15):
+    def get_compiled_model(self, *args):
+        print(args)
+        loss_fn, lr, decay, beta = args
         input_img = Input(batch_shape=(self.BATCH_SIZE, *self.input_shape))
 
         encoder = self._encoder()

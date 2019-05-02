@@ -20,7 +20,8 @@ class AutoEncoder:
     def _decoder(self):
         pass
 
-    def get_compiled_model(self, loss_fn=None, lr=1e-3, decay=5e-5):
+    def get_compiled_model(self, *args):
+        loss_fn, lr, decay, _ = args
         input_img = Input(shape=self.input_shape)
         encoder = self._encoder()
         decoder = self._decoder()
