@@ -20,7 +20,7 @@ class AutoEncoder:
     def _decoder(self):
         pass
 
-    def get_compiled_model(self, loss_fn=None):
+    def get_compiled_model(self, loss_fn=None, lr=1e-3, decay=5e-5):
         input_img = Input(shape=self.input_shape)
         encoder = self._encoder()
         decoder = self._decoder()
@@ -32,7 +32,7 @@ class AutoEncoder:
         self.loss_fn = self._get_loss(loss_fn)
 
         model = Model(input_img, decoded)
-        model.compile(optimizer=Adam(lr=1e-3, decay=5e-5), loss=self.loss_fn)
+        model.compile(optimizer=Adam(lr=lr, decay=decay), loss=self.loss_fn)
         return model, model
 
     def _get_loss(self, loss_fn):
