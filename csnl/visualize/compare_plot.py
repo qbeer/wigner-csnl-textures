@@ -10,10 +10,10 @@ class VAEPlotter:
 
     def grid_plot(self):
         input_shape = self.model.layers[0].output_shape
+        batch_size = input_shape[0]
 
         train_images, _ = next(self.datagen.flow())
         test_images, _ = self.datagen.validation_data()
-        batch_size = train_images.shape[0]
 
         reco_train = self.model.predict(train_images.reshape(
             *input_shape), batch_size=batch_size)
