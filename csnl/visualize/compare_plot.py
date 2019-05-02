@@ -17,10 +17,10 @@ class VAEPlotter:
         batch_size = train_images.shape[0]
 
         reco_train = self.model.predict(train_images.reshape(
-            *input_shape), batch_size=batch_size)
+            batch_size, *input_shape[1:]), batch_size=batch_size)
 
         reco_test = self.model.predict(test_images[:batch_size].reshape(
-            *input_shape), batch_size=batch_size)
+            batch_size, *input_shape[1:]), batch_size=batch_size)
 
         reco = [reco_train, reco_test]
         images = [train_images, test_images]
