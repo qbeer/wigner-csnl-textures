@@ -6,7 +6,7 @@ from keras.models import Model
 class DenseVAE(VariationalAutoEncoder):
 
     def _encoder(self):
-        input_tensor = Input(shape=self.input_shape[1:])
+        input_tensor = Input(shape=self.input_shape)
         x = Dense(512)(input_tensor)
         x = PReLU()(x)
         x = Dense(256)(x)
