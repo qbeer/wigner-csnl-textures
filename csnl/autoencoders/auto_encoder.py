@@ -21,7 +21,7 @@ class AutoEncoder:
         pass
 
     def get_compiled_model(self, *args):
-        loss_fn, lr, decay, _ = args
+        loss_fn, lr, decay, self.observation_noise, _ = args
         input_img = Input(shape=self.input_shape)
         encoder = self._encoder()
         decoder = self._decoder()
@@ -30,11 +30,16 @@ class AutoEncoder:
         latent = Dense(self.latent_dim)(encoded)
         decoded = decoder(latent)
 
+        # Generative model
+        latent_input = Input(shape=(self.latent_dim, ))
+        _decoded = decoder(latent_input)
+        generative_model = Model(latent_input, _decoded)
+
         self.loss_fn = self._get_loss(loss_fn)
 
         model = Model(input_img, decoded)
         model.compile(optimizer=Adam(lr=lr, decay=decay), loss=self.loss_fn)
-        return model, model
+        return model, generative_model
 
     def _get_loss(self, loss_fn):
         if loss_fn == None:
@@ -62,8 +67,8 @@ class AutoEncoder:
 
     def _normal(self, x_true, x_reco):
         return -tf.reduce_mean(
-            tfd.Normal(x_reco, scale=tf.Variable(0.001))._log_prob(x_true))
+            tfd.Normal(x_reco, scale=self.observation_noise)._log_prob(x_true))
 
     def _normalDiag(self, x_true, x_reco):
         return -tf.reduce_mean(
-            tfd.MultivariateNormalDiag(x_reco, scale_identity_multiplier=tf.Variable(0.001))._log_prob(x_true))
+            tfd.MultivariateNormalDiag(x_reco, scale_identity_multiplier=self.observation_noise)._log_prob(x_true))

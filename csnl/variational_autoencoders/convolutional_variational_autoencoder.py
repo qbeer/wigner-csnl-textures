@@ -34,6 +34,6 @@ class ConvolutionalVAE(VariationalAutoEncoder):
         x = PReLU()(x)
         x = Conv2DTranspose(256, (2, 2), padding='same')(x)
         x = PReLU()(x)
-        reco = Conv2DTranspose(1, (2, 2), strides=(2, 2))(x)
+        reco = Conv2DTranspose(self.input_shape[-1], (2, 2), strides=(2, 2))(x)
         decoder_model = Model(latent, reco)
         return decoder_model

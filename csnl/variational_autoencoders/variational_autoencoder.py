@@ -9,10 +9,10 @@ tfd = tfp.distributions
 
 
 class VariationalAutoEncoder:
-    def __init__(self, input_shape, latent_dim, BATCH_SIZE):
+    def __init__(self, input_shape, latent_dim):
         self.input_shape = input_shape
         self.latent_dim = latent_dim
-        self.BATCH_SIZE = BATCH_SIZE
+        self.BATCH_SIZE = input_shape[0]
 
     @abstractmethod
     def _encoder(self):
@@ -40,8 +40,8 @@ class VariationalAutoEncoder:
 
     def get_compiled_model(self, *args):
         print(args)
-        loss_fn, lr, decay, beta = args
-        input_img = Input(batch_shape=(self.BATCH_SIZE, *self.input_shape))
+        loss_fn, lr, decay, self.observation_noise, beta = args
+        input_img = Input(batch_shape=self.input_shape)
 
         encoder = self._encoder()
         encoded = encoder(input_img)
@@ -63,17 +63,17 @@ class VariationalAutoEncoder:
         generator = Model(decoder_input, _reco)
 
         model = Model(input_img, reco)
-        model.compile(optimizer=Adam(lr=lr, decay=decay), loss=self.loss_fn)
+        model.compile(optimizer=Adam(lr=lr, decay=decay), loss=self.loss_fn, metrics=[self._kl_loss])
 
         return model, generator
 
     """
-      For metrics (!)
+      Making it custom metric to be able to feed it to Keras API - actually no need for y_true, y_pred
     """
 
-    def _kl_loss(self):
-        return - self.beta * 0.5 * tf.reduce_mean(
-            1 + self.z_log_sigma - tf.square(self.z_mean) - tf.exp(self.z_log_sigma), axis=-1)
+    def _kl_loss(self, y_true, y_pred):
+        return - self.beta * 0.5 * K.mean(
+            1 + self.z_log_sigma - K.square(self.z_mean) - K.exp(self.z_log_sigma), axis=-1)
 
     """
       For binarized input with KL term (!)
@@ -81,11 +81,11 @@ class VariationalAutoEncoder:
 
     def _binary(self, x_true, x_reco):
         return -tf.nn.sigmoid_cross_entropy_with_logits(
-            labels=x_true, logits=x_reco) + self._kl_loss()
+            labels=x_true, logits=x_reco) + self._kl_loss(None, None)
 
     def _bernoulli(self, x_true, x_reco):
         return -tf.reduce_mean(tfd.Bernoulli(x_reco)._log_prob(x_true)
-                               ) + self._kl_loss()
+                               ) + self._kl_loss(None, None)
 
     """
       For non binarized input with KL term(!)
@@ -93,10 +93,10 @@ class VariationalAutoEncoder:
 
     def _normal(self, x_true, x_reco):
         return -tf.reduce_mean(
-            tfd.Normal(x_reco, scale=tf.Variable(0.001))._log_prob(x_true)
-        ) + self._kl_loss()
+            tfd.Normal(x_reco, scale=self.observation_noise)._log_prob(x_true)
+        ) + self._kl_loss(None, None)
 
     def _normalDiag(self, x_true, x_reco):
         return -tf.reduce_mean(
             tfd.MultivariateNormalDiag(
-                x_reco, scale_identity_multiplier=tf.Variable(0.001))._log_prob(x_true)) + self._kl_loss()
+                x_reco, scale_identity_multiplier=self.observation_noise)._log_prob(x_true)) + self._kl_loss(None, None)
