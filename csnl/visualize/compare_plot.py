@@ -13,6 +13,9 @@ class VAEPlotter:
         self.test_images, _ = self.datagen.validation_data()
         self.batch_size = self.train_images.shape[0]
         self.input_shape = self.model.layers[0].output_shape
+        self.image_shape = self.input_shape[1:3]
+        if self.input_shape[3] > 1:
+            self.image_shape.append(self.input_shape[3])
 
     def grid_plot(self):
         reco_train = self.model.predict(self.train_images.reshape(
@@ -35,11 +38,11 @@ class VAEPlotter:
                 if inner_ind % 2 == 0:
                     if inner_ind < 4: ax.set_title('Reconstructed')
                     ax.imshow(reco[outer_ind][inner_ind].reshape(
-                        28, 28), interpolation=None)
+                        *self.image_shape), interpolation=None)
                 else:
                     if inner_ind < 4: ax.set_title(' <- Original')
                     ax.imshow(images[outer_ind][inner_ind -
-                                                1].reshape(28, 28), interpolation=None)
+                                                1].reshape(*self.image_shape), interpolation=None)
                 ax.set_xticks([])
                 ax.set_yticks([])
                 fig.add_subplot(ax)
@@ -59,7 +62,7 @@ class VAEPlotter:
         fig, axes = plt.subplots(5, 5, sharex=True, sharey=True, figsize=(10, 8))
 
         for ind, ax in enumerate(axes.flatten()):
-            ax.imshow(recos[ind].reshape(28, 28))
+            ax.imshow(recos[ind].reshape(*self.image_shape))
             ax.set_xticks([])
             ax.set_yticks([])
 
