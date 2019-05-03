@@ -21,10 +21,12 @@ class DataLoader:
             print('Mean: %.3f, Standard Deviation: %.3f' % (mean, std))
             print('Min: %.3f, Max: %.3f' % (np.min(X_train), np.max(X_train)))
 
+            channel = int(np.prod(X_train.shape) / (X_train.shape[0] * 28 * 28))
+
             X_train, _ = model_selection.train_test_split(
-                X_train.reshape(X_train.shape[0], 28, 28, 1), test_size=0, random_state=45)
+                X_train.reshape(X_train.shape[0], 28, 28, channel), test_size=0, random_state=45)
             X_test, _ = model_selection.train_test_split(
-                X_test.reshape(X_test.shape[0], 28, 28, 1), test_size=0, random_state=42)
+                X_test.reshape(X_test.shape[0], 28, 28, channel), test_size=0, random_state=42)
         except IndexError:
             X = self.data
             X = np.clip(X, 0, 1.0)
@@ -33,7 +35,9 @@ class DataLoader:
             print('Mean: %.3f, Standard Deviation: %.3f' % (mean, std))
             print('Min: %.3f, Max: %.3f' % (np.min(X), np.max(X)))
 
+            channel = int(np.prod(X_train.shape) / (X_train.shape[0] * 28 * 28))
+
             X_train, X_test = model_selection.train_test_split(
-                X.reshape(X.shape[0], 28, 28, 1), test_size=0.33, random_state=137)
+                X.reshape(X.shape[0], 28, 28, channel), test_size=0.33, random_state=137)
         finally:
             return (X_train, X_test)
