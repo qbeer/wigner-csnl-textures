@@ -35,7 +35,7 @@ class DataLoader:
             print('Mean: %.3f, Standard Deviation: %.3f' % (mean, std))
             print('Min: %.3f, Max: %.3f' % (np.min(X), np.max(X)))
 
-            channel = int(np.prod(X_train.shape) / (X_train.shape[0] * 28 * 28))
+            channel = int(np.prod(X.shape) / (X.shape[0] * 28 * 28))
 
             X_train, X_test = model_selection.train_test_split(
                 X.reshape(X.shape[0], 28, 28, channel), test_size=0.33, random_state=137)

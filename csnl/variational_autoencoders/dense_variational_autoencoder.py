@@ -24,6 +24,6 @@ class DenseVAE(VariationalAutoEncoder):
         x = PReLU()(x)
         x = Dense(1024)(x)
         x = PReLU()(x)
-        reco = Dense(self.input_shape[1] if len(self.input_shape) > 1 else self.input_shape[0])(x)
+        reco = Dense(self.input_shape[1])(x)
         decoder = Model(latent, reco)
         return decoder

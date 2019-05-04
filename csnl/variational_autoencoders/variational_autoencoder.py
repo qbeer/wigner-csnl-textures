@@ -40,7 +40,7 @@ class VariationalAutoEncoder:
 
     def get_compiled_model(self, *args):
         print(args)
-        loss_fn, lr, decay, self.observation_noise, beta = args
+        loss_fn, _, _, self.observation_noise, beta = args
         input_img = Input(batch_shape=self.input_shape)
 
         encoder = self._encoder()
@@ -64,7 +64,7 @@ class VariationalAutoEncoder:
 
         model = Model(input_img, reco)
         model.compile(optimizer=Nadam(),
-                      loss=self.loss_fn, metrics=[self._kl_loss])
+                      loss=self.loss_fn, metrics=[self.KL_divergence])
 
         return model, generator
 
@@ -72,7 +72,7 @@ class VariationalAutoEncoder:
       Making it custom metric to be able to feed it to Keras API - actually no need for y_true, y_pred
     """
 
-    def _kl_loss(self, y_true, y_pred):
+    def KL_divergence(self, y_true, y_pred):
         return - self.beta * 0.5 * K.mean(
             1 + self.z_log_sigma - K.square(self.z_mean) - K.exp(self.z_log_sigma), axis=-1)
 
@@ -82,11 +82,11 @@ class VariationalAutoEncoder:
 
     def _binary(self, x_true, x_reco):
         return -tf.nn.sigmoid_cross_entropy_with_logits(
-            labels=x_true, logits=x_reco) + self._kl_loss(None, None)
+            labels=x_true, logits=x_reco) + self.KL_divergence(None, None)
 
     def _bernoulli(self, x_true, x_reco):
         return -tf.reduce_mean(tfd.Bernoulli(x_reco)._log_prob(x_true)
-                               ) + self._kl_loss(None, None)
+                               ) + self.KL_divergence(None, None)
 
     """
       For non binarized input with KL term(!)
@@ -95,9 +95,9 @@ class VariationalAutoEncoder:
     def _normal(self, x_true, x_reco):
         return -tf.reduce_mean(
             tfd.Normal(x_reco, scale=self.observation_noise)._log_prob(x_true)
-        ) + self._kl_loss(None, None)
+        ) + self.KL_divergence(None, None)
 
     def _normalDiag(self, x_true, x_reco):
         return -tf.reduce_mean(
             tfd.MultivariateNormalDiag(
-                x_reco, scale_identity_multiplier=self.observation_noise)._log_prob(x_true)) + self._kl_loss(None, None)
+                x_reco, scale_identity_multiplier=self.observation_noise)._log_prob(x_true)) + self.KL_divergence(None, None)

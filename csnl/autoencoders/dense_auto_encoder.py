@@ -12,6 +12,8 @@ class DenseAutoEncoder(AutoEncoder):
         x = PReLU()(x)
         x = Dense(256)(x)
         x = PReLU()(x)
+        x = Dense(128)(x)
+        x = PReLU()(x)
         encoder = Model(input_img, x)
         return encoder
 
@@ -21,6 +23,8 @@ class DenseAutoEncoder(AutoEncoder):
         x = PReLU()(x)
         x = Dense(512)(x)
         x = PReLU()(x)
-        reco = Dense(self.input_shape[1] if len(self.input_shape) > 1 else self.input_shape[0])(x)
+        x = Dense(1024)(x)
+        x = PReLU()(x)
+        reco = Dense(self.input_shape[0])(x)
         decoder = Model(latent_input, reco)
         return decoder
