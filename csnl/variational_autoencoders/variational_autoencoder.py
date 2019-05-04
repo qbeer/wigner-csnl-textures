@@ -62,7 +62,7 @@ class VariationalAutoEncoder:
         generator = Model(decoder_input, _reco)
 
         model = Model(input_img, reco)
-        model.compile(optimizer=Adam(lr=lr, schedule_decay=decay),
+        model.compile(optimizer=Adam(lr=lr, decay=decay),
                       loss=self.loss_fn, metrics=[self.KL_divergence])
 
         return model, generator
