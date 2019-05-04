@@ -1,4 +1,4 @@
-from keras.optimizers import Nadam
+from keras.optimizers import Adam
 from keras.layers import Lambda, Dense, Input
 from keras.models import Model
 import tensorflow as tf
@@ -39,8 +39,7 @@ class VariationalAutoEncoder:
             return self._normalDiag
 
     def get_compiled_model(self, *args):
-        print(args)
-        loss_fn, _, _, self.observation_noise, beta = args
+        loss_fn, lr, decay, self.observation_noise, beta = args
         input_img = Input(batch_shape=self.input_shape)
 
         encoder = self._encoder()
@@ -63,7 +62,7 @@ class VariationalAutoEncoder:
         generator = Model(decoder_input, _reco)
 
         model = Model(input_img, reco)
-        model.compile(optimizer=Nadam(),
+        model.compile(optimizer=Adam(lr=lr, schedule_decay=decay),
                       loss=self.loss_fn, metrics=[self.KL_divergence])
 
         return model, generator
