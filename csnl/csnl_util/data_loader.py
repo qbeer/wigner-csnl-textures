@@ -5,7 +5,8 @@ import os
 from sklearn.preprocessing import StandardScaler
 
 class DataLoader:
-    def __init__(self, file_path):
+    def __init__(self, file_path, binarize):
+        self.binarize = binarize
         with open(file_path, 'rb') as f:
             self.data = pickle.load(f)
 
@@ -40,4 +41,9 @@ class DataLoader:
             X_train, X_test = model_selection.train_test_split(
                 X.reshape(X.shape[0], 28, 28, channel), test_size=0.05, random_state=137)
         finally:
+            if self.binarize:
+                X_train[X_train >= .5] = 1.
+                X_train[X_train < .5] = 0.
+                X_test[X_test >= .5] = 1.
+                X_test[X_test < .5] = 0.
             return (X_train, X_test)
