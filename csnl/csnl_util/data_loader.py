@@ -38,6 +38,6 @@ class DataLoader:
             channel = int(np.prod(X.shape) / (X.shape[0] * 28 * 28))
 
             X_train, X_test = model_selection.train_test_split(
-                X.reshape(X.shape[0], 28, 28, channel), test_size=0.33, random_state=137)
+                X.reshape(X.shape[0], 28, 28, channel), test_size=0.05, random_state=137)
         finally:
             return (X_train, X_test)
