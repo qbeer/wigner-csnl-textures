@@ -1,4 +1,4 @@
-from keras.optimizers import Adam
+from keras.optimizers import Adam, RMSprop
 from keras.layers import Lambda, Dense, Input
 from keras.models import Model
 import tensorflow as tf
@@ -62,7 +62,7 @@ class VariationalAutoEncoder:
         generator = Model(decoder_input, _reco)
 
         model = Model(input_img, reco)
-        model.compile(optimizer=Adam(lr=lr, decay=decay),
+        model.compile(optimizer=RMSprop(lr=lr, decay=decay),
                       loss=self.loss_fn, metrics=[self.KL_divergence])
 
         return model, generator
