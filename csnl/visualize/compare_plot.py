@@ -36,11 +36,13 @@ class VAEPlotter:
             for inner_ind in range(16):
                 ax = plt.Subplot(fig, inner[inner_ind])
                 if inner_ind % 2 == 0:
-                    if inner_ind < 4: ax.set_title('Reconstructed')
+                    if inner_ind < 4:
+                        ax.set_title('Reconstructed')
                     ax.imshow(reco[outer_ind][inner_ind].reshape(
                         *self.image_shape), interpolation=None)
                 else:
-                    if inner_ind < 4: ax.set_title(' <- Original')
+                    if inner_ind < 4:
+                        ax.set_title(' <- Original')
                     ax.imshow(images[outer_ind][inner_ind -
                                                 1].reshape(*self.image_shape), interpolation=None)
                 ax.set_xticks([])
@@ -50,32 +52,32 @@ class VAEPlotter:
         fig.suptitle("Train and test reconstructions\n\n")
         plt.show()
 
-    def generate_samples(self, subdivision=10):
-        starts = np.linspace(-1, 1, self._latent_dim)
-        stops = np.linspace(-1, 1, self._latent_dim)
-        latent_inputs = self._ndim_grid(starts, stops, subdivision)
+    def generate_samples(self):
+        latent_inputs = np.random.normal(size=(14*14, self._latent_dim))
 
-        assert len(latent_inputs) > 63, "Latent inputs should be at least 64."
-        recos = self.generator_model.predict(latent_inputs[:self.batch_size].reshape(self.batch_size, self._latent_dim))
+        self._plot_samples(latent_inputs)
 
-        # Output 64 images
-        fig, axes = plt.subplots(8, 8, sharex=True, sharey=True, figsize=(8, 8))
+    def visualize_latent_param(self, axis=0):
+        sweep = np.linspace(-5, 5, 14*14)
+        latent_inputs = np.array(np.random.normal(
+            size=(1, self._latent_dim)).tolist() * (14*14))
+        latent_inputs = latent_inputs.reshape(14*14, self._latent_dim)
+        latent_inputs[:, axis] = sweep
+
+        self._plot_samples(latent_inputs)
+
+    def _plot_samples(self, latent_inputs):
+        recos = self.generator_model.predict(
+            latent_inputs[:14*14].reshape(14*14, self._latent_dim))
+        # Output 196 images
+        fig, axes = plt.subplots(
+            14, 14, sharex=True, sharey=True, figsize=(11, 11))
 
         for ind, ax in enumerate(axes.flatten()):
-            ax.imshow(recos[ind].reshape(*self.image_shape))
+            ax.imshow(recos[ind].reshape(28, 28))
             ax.set_xticks([])
             ax.set_yticks([])
 
-        fig.suptitle("Generated samples on %d - dimensional grid" % self._latent_dim)
+        fig.suptitle("Generated samples on %d - dimensional grid" %
+                     self._latent_dim)
         plt.show()
-
-    def _ndim_grid(self, starts, stops, subdivision):
-        # Set number of dimensions
-        ndims = len(starts)
-
-        # List of ranges across all dimensions
-        L = [np.linspace(starts[i], stops[i], subdivision) for i in range(ndims)]
-
-        # Finally use meshgrid to form all combinations corresponding to all 
-        # dimensions and stack them as M x ndims array
-        return np.hstack((np.meshgrid(*L))).swapaxes(0,1).reshape(ndims,-1).T

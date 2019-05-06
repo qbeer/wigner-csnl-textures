@@ -2,3 +2,5 @@ from __future__ import absolute_import
 
 from .dense_variational_autoencoder import DenseVAE
 from .convolutional_variational_autoencoder import ConvolutionalVAE
+from .small_convolutional_variational_autoencoder import SmallConvolutionalVAE
+from .small_dense_variational_autoencoder import SmallDenseVAE
