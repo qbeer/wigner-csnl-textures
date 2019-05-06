@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 class ModelTrainer:
     def __init__(self, model, data_generator, loss_fn="normal", lr=1e-3, decay=5e-5, observation_noise=1e-3, beta=1e-12):
         assert loss_fn in str(["normal", "normalDiag", "binary", None]),\
-            "Loss function should be in [\'normal\', \'normalDiag\', \'None\', \'binary\']"
+            "Loss function should be in [\'normal\', \'normalDiag\', \'None\' (bernoulli), \'binary\']"
         args = loss_fn, lr, decay, observation_noise, beta
         self.model, self.generator = model.get_compiled_model(*args)
         self.latent_dim = model.latent_dim

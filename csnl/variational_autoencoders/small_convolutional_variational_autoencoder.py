@@ -28,5 +28,4 @@ class SmallConvolutionalVAE(VariationalAutoEncoder):
         x = ReLU()(x)
         reco = Conv2DTranspose(self.input_shape[-1], (2, 2), strides=(2, 2), padding='same')(x)
         decoder_model = Model(latent, reco)
-        print("Small decoder outputshape: ", decoder_model.layers[-1].output_shape)
         return decoder_model
