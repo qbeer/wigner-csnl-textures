@@ -16,6 +16,16 @@ class DataGenerator:
     def flow(self):
         return self.DATA_GENERATOR.flow(self.TRAIN, self.TRAIN, batch_size=self.BATCH_SIZE)
 
+    def contrast_flow(self):
+        def train_generator(_it):
+            while True:
+                batch_x, batch_y = next(_it)
+                contrast = np.random.rand()
+                _batch_x, _batch_y = contrast*batch_x, contrast*batch_y
+                _batch_x, _batch_y = np.clip(_batch_x, 0, 1), np.clip(_batch_y, 0, 1)
+                yield _batch_x, _batch_y
+        return train_generator(self.flow())
+
     def flattened_flow(self):
         def train_generator(_it):
             image_dim = np.prod(self.IMAGE_SHAPE)
