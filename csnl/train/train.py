@@ -11,10 +11,11 @@ class ModelTrainer:
         self.data_generator = data_generator
         self.model.summary()
 
-    def fit(self, EPOCHS, STEPS):
+    def fit(self, EPOCHS, STEPS, contrast=False):
         try:
             self.history = self.model.fit_generator(
-                self.data_generator.flow(), steps_per_epoch=STEPS,
+                self.data_generator.flow() if not contrast else self.data_generator.contrast_flow(),
+                steps_per_epoch=STEPS,
                 verbose=1, epochs=EPOCHS,
                 validation_data=self.data_generator.validation_data())
         except ValueError:
