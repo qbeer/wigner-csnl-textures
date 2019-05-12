@@ -48,7 +48,7 @@ class VariationalAutoEncoder:
         # Reparametrization
         self.z_mean = Dense(self.latent_dim)(encoded)
         self.z_log_sigma = Dense(self.latent_dim)(encoded)
-        z = Lambda(self._sampling)([self.z_mean, self.z_log_sigma])
+        z = Lambda(self._sampling, name="latent")([self.z_mean, self.z_log_sigma])
 
         decoder = self._decoder()
         reco = decoder(z)
@@ -61,7 +61,7 @@ class VariationalAutoEncoder:
         _reco = decoder(decoder_input)
         generator = Model(decoder_input, _reco)
 
-        model = Model(input_img, reco)
+        model = Model(input_img, outputs=[reco, z])
         model.compile(optimizer=RMSprop(lr=lr, decay=decay),
                       loss=self.loss_fn, metrics=[self.KL_divergence])
 

@@ -5,7 +5,7 @@ data_gen = DataGenerator(image_shape=(28, 28, 1), batch_size=70, file_path=os.ge
 conv_vae = SmallConvolutionalVAE(input_shape=(70, 28, 28, 1), latent_dim=16)
 
 model_trainer = ModelTrainer(conv_vae, data_gen, loss_fn="normal")
-model_trainer.fit(1, 5)
+model_trainer.fit(2, 2, contrast=True)
 
 plotter = VAEPlotter(model_trainer, data_gen)
 plotter.grid_plot()

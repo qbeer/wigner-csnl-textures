@@ -9,8 +9,8 @@ class VAEPlotter:
         self.generator_model = fitted_model.generator
         self._latent_dim = fitted_model.latent_dim
         self.datagen = datagen
-        self.train_images, _ = next(self.datagen.flow())
-        self.test_images, _ = self.datagen.validation_data()
+        self.train_images, _ = next(self.datagen.flow(self._latent_dim))
+        self.test_images, _ = self.datagen.validation_data(self._latent_dim)
         self.batch_size = self.train_images.shape[0]
         self.input_shape = self.model.layers[0].output_shape
         self.image_shape = self.train_images.shape[1:]
@@ -18,10 +18,10 @@ class VAEPlotter:
             self.image_shape = self.image_shape[:-1]
 
     def grid_plot(self):
-        reco_train = self.model.predict(self.train_images.reshape(
+        reco_train, _ = self.model.predict(self.train_images.reshape(
             self.batch_size, *self.input_shape[1:]), batch_size=self.batch_size)
 
-        reco_test = self.model.predict(self.test_images[:self.batch_size].reshape(
+        reco_test, _ = self.model.predict(self.test_images[:self.batch_size].reshape(
             self.batch_size, *self.input_shape[1:]), batch_size=self.batch_size)
 
         reco = [reco_train, reco_test]
