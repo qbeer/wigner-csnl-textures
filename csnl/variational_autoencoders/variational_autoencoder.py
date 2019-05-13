@@ -61,7 +61,10 @@ class VariationalAutoEncoder:
         _reco = decoder(decoder_input)
         generator = Model(decoder_input, _reco)
 
-        model = Model(input_img, outputs=[reco, z])
+        # Model for later inference
+        self.latent_model = Model(input_img, outputs=[reco, z])
+
+        model = Model(input_img, reco)
         model.compile(optimizer=RMSprop(lr=lr, decay=decay),
                       loss=self.loss_fn, metrics=[self.KL_divergence])
 
