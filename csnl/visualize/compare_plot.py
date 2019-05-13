@@ -39,12 +39,14 @@ class VAEPlotter:
                     if inner_ind < 4:
                         ax.set_title('Reconstructed')
                     ax.imshow(reco[outer_ind][inner_ind].reshape(
-                        *self.image_shape), interpolation=None)
+                        *self.image_shape),
+                        interpolation='none', vmin=0, vmax=1)
                 else:
                     if inner_ind < 4:
                         ax.set_title(' <- Original')
                     ax.imshow(images[outer_ind][inner_ind -
-                                                1].reshape(*self.image_shape), interpolation=None)
+                                                1].reshape(*self.image_shape),
+                                                interpolation='none', vmin=0, vmax=1)
                 ax.set_xticks([])
                 ax.set_yticks([])
                 fig.add_subplot(ax)
@@ -74,7 +76,7 @@ class VAEPlotter:
             14, 14, sharex=True, sharey=True, figsize=(11, 11))
 
         for ind, ax in enumerate(axes.flatten()):
-            ax.imshow(recos[ind].reshape(28, 28))
+            ax.imshow(recos[ind].reshape(28, 28), interpolation='none', vmin=0, vmax=1)
             ax.set_xticks([])
             ax.set_yticks([])
 
