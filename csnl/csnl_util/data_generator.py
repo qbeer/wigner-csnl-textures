@@ -46,7 +46,7 @@ class DataGenerator:
                 """
                     Tested contrast function with random alpha value between 0-2!
                 """
-                alpha = np.random.rand()*2.
+                alpha = np.random.rand(batch_x.shape[0])*2.
                 _batch_x, _batch_y = contrast(batch_x, alpha), contrast(batch_y, alpha)
                 yield batch_x.reshape(self.BATCH_SIZE, image_dim), batch_y.reshape(self.BATCH_SIZE, image_dim)
         return train_generator(self.flow())

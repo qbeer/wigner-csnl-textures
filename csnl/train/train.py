@@ -39,12 +39,12 @@ class ModelTrainer:
 
     def _save_model(self):
         print("Saving the trained inference, generator and latent models...\t", end='')
-        self.model.save("model.h5")
-        self.generator.save("generator_model.h5")
+        self.model.save(os.getcwd() + "/model.h5")
+        self.generator.save(os.getcwd() + "/generator_model.h5")
         """
             This must be acquired here before we are after training at this point!
         """
-        self._model.latent_model.save("latent_model.h5")
+        self.latent_model.save(os.getcwd() + "/latent_model.h5")
         self.saved = True
         print("OK!")
 

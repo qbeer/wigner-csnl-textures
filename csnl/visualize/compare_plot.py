@@ -59,8 +59,8 @@ class VAEPlotter:
 
         self._plot_samples(latent_inputs)
 
-    def visualize_latent_param(self, axis=0):
-        sweep = np.linspace(-5, 5, 14*14)
+    def visualize_latent(self, axis=0, sweep_from=-1, sweep_to=1):
+        sweep = np.linspace(sweep_from, sweep_to, 14*14)
         latent_inputs = np.array(np.random.normal(
             size=(1, self._latent_dim)).tolist() * (14*14))
         latent_inputs = latent_inputs.reshape(14*14, self._latent_dim)
