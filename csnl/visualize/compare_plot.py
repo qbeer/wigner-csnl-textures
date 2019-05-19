@@ -63,7 +63,7 @@ class VAEPlotter:
         sweep = np.linspace(sweep_from, sweep_to, 14*14)
         latent_inputs = np.array(np.random.normal(
             size=(100, self._latent_dim)))
-        latent_inputs = np.mean(latent_inputs, axis=1).to_list() * (14*14)
+        latent_inputs = np.array(np.mean(latent_inputs, axis=0).tolist() * (14*14))
         latent_inputs = latent_inputs.reshape(14*14, self._latent_dim)
         latent_inputs[:, axis] = sweep
 
