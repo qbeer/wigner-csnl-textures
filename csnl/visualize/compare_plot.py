@@ -46,7 +46,7 @@ class VAEPlotter:
                         ax.set_title(' <- Original')
                     ax.imshow(images[outer_ind][inner_ind -
                                                 1].reshape(*self.image_shape),
-                                                interpolation='none', vmin=0, vmax=1)
+                              interpolation='none', vmin=0, vmax=1)
                 ax.set_xticks([])
                 ax.set_yticks([])
                 fig.add_subplot(ax)
@@ -62,7 +62,8 @@ class VAEPlotter:
     def visualize_latent(self, axis=0, sweep_from=-1, sweep_to=1):
         sweep = np.linspace(sweep_from, sweep_to, 14*14)
         latent_inputs = np.array(np.random.normal(
-            size=(1, self._latent_dim)).tolist() * (14*14))
+            size=(100, self._latent_dim)))
+        latent_inputs = np.mean(latent_inputs, axis=1).to_list() * (14*14)
         latent_inputs = latent_inputs.reshape(14*14, self._latent_dim)
         latent_inputs[:, axis] = sweep
 
@@ -76,7 +77,8 @@ class VAEPlotter:
             14, 14, sharex=True, sharey=True, figsize=(11, 11))
 
         for ind, ax in enumerate(axes.flatten()):
-            ax.imshow(recos[ind].reshape(28, 28), interpolation='none', vmin=0, vmax=1)
+            ax.imshow(recos[ind].reshape(28, 28),
+                      interpolation='none', vmin=0, vmax=1)
             ax.set_xticks([])
             ax.set_yticks([])
 
