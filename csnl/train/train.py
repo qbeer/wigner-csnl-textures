@@ -8,7 +8,7 @@ class ModelTrainer:
         assert loss_fn in str(["normal", "normalDiag", "binary", None]),\
             "Loss function should be in [\'normal\', \'normalDiag\', \'None\' (bernoulli), \'binary\']"
         args = loss_fn, lr, decay, observation_noise, beta
-        self._model = model
+        self.latent_model = model.latent_model
         self.model, self.generator = model.get_compiled_model(*args)
         self.latent_dim = model.latent_dim
         self.data_generator = data_generator
