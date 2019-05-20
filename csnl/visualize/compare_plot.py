@@ -61,9 +61,8 @@ class VAEPlotter:
 
     def visualize_latent(self, axis=0, sweep_from=-1, sweep_to=1):
         sweep = np.linspace(sweep_from, sweep_to, 14*14)
-        latent_inputs = np.array(np.random.normal(
-            size=(100, self._latent_dim)))
-        latent_inputs = np.array(np.mean(latent_inputs, axis=0).tolist() * (14*14))
+        latent_inputs = np.random.normal(size=(1, self._latent_dim))
+        latent_inputs = np.array(latent_inputs.tolist() * (14*14))
         latent_inputs = latent_inputs.reshape(14*14, self._latent_dim)
         latent_inputs[:, axis] = sweep
 
