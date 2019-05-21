@@ -8,9 +8,7 @@ class DataGenerator:
         self.DATA_LOADER = DataLoader(file_path, binarize)
         self.IMAGE_SHAPE = image_shape
         self.BATCH_SIZE = batch_size
-
         self.DATA_GENERATOR = ImageDataGenerator()
-
         self.TRAIN, self.TEST = self.DATA_LOADER.train_test_split()
 
     def flow(self):
@@ -20,30 +18,38 @@ class DataGenerator:
         def train_generator(_it):
             while True:
                 batch_x, batch_y = next(_it)
-                contrast = np.random.rand(batch_x.shape[0]) * 2.
-                _batch_x, _batch_y = np.split(np.array(
-                    [[cont*batch_x[ind], cont*batch_y[ind]] for ind, cont in enumerate(contrast)]), 2, axis=1)
-                _batch_x, _batch_y = _batch_x.reshape(_batch_x.shape[0], *_batch_x.shape[2:]), \
-                    _batch_y.reshape(_batch_y.shape[0], *_batch_y.shape[2:])
-                _batch_x, _batch_y = np.clip(
-                    _batch_x, 0, 1), np.clip(_batch_y, 0, 1)
-                yield _batch_x, _batch_y
+                yield (self._contrast(batch_x), batch_y)
+        print("WAS RUN!")
         return train_generator(self.flow())
 
     def flattened_flow(self):
-        return self._flat_train_generator(self.flow())
+        image_dim = np.prod(self.IMAGE_SHAPE)
+
+        def train_generator(_it):
+            while True:
+                batch_x, batch_y = next(_it)
+                yield batch_x.reshape(self.BATCH_SIZE, image_dim), batch_y.reshape(self.BATCH_SIZE, image_dim)
+        return train_generator(self.flow())
 
     def flattened_contrast_flow(self):
-        return self._flat_train_generator(self.contrast_flow())
-
-    def _flat_train_generator(self, _it):
         image_dim = np.prod(self.IMAGE_SHAPE)
-        while True:
-            batch_x, batch_y = next(_it)
-            yield batch_x.reshape(self.BATCH_SIZE, image_dim), batch_y.reshape(self.BATCH_SIZE, image_dim)
 
-    def _contrast(self, img, alpha, brightness=0):
-        return np.clip(alpha*(img - 0.5) + 0.5 + brightness, 0, 1)
+        def train_generator(_it):
+            while True:
+                batch_x, batch_y = next(_it)
+                batch_x, batch_y = self._contrast(
+                    batch_x), self._contrast(batch_y)
+                yield batch_x.reshape(self.BATCH_SIZE, image_dim), batch_y.reshape(self.BATCH_SIZE, image_dim)
+
+        return train_generator(self.flow())
+
+    def _contrast(self, images):
+        contrasted_images = np.zeros(shape=images.shape)
+        for ind in range(images.shape[0]):
+
+            contrasted_images[ind] = np.clip(
+                np.random.rand() * 2. * (images[ind] - 0.5) + 0.5, 0, 1)
+        return contrasted_images
 
     def validation_data(self):
         return self.TEST, self.TEST

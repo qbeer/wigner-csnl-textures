@@ -6,7 +6,7 @@ from keras.models import Model
 class ConvolutionalAutoEncoder(AutoEncoder):
 
     def _encoder(self):
-        input_img = Input(shape=self.input_shape)
+        input_img = Input(shape=self.input_shape[1:])
         x = Conv2D(512, (2, 2), padding='same')(input_img)
         x = PReLU()(x)
         x = MaxPooling2D((2, 2), padding='same')(x)

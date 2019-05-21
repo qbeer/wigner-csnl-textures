@@ -7,7 +7,7 @@ from keras.optimizers import Adam
 class DenseAutoEncoder(AutoEncoder):
 
     def _encoder(self):
-        input_img = Input(shape=self.input_shape)
+        input_img = Input(shape=self.input_shape[1:])
         x = Dense(512)(input_img)
         x = PReLU()(x)
         x = Dense(256)(x)
@@ -25,6 +25,6 @@ class DenseAutoEncoder(AutoEncoder):
         x = PReLU()(x)
         x = Dense(1024)(x)
         x = PReLU()(x)
-        reco = Dense(self.input_shape[0])(x)
+        reco = Dense(self.input_shape[1])(x)
         decoder = Model(latent_input, reco)
         return decoder
