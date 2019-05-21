@@ -19,7 +19,6 @@ class DataGenerator:
             while True:
                 batch_x, batch_y = next(_it)
                 yield (self._contrast(batch_x), batch_y)
-        print("WAS RUN!")
         return train_generator(self.flow())
 
     def flattened_flow(self):
