@@ -5,3 +5,4 @@ from .csnl_util import DataGenerator
 from .train import ModelTrainer
 from .variational_autoencoders import DenseVAE, SmallDenseVAE, ConvolutionalVAE, SmallConvolutionalVAE
 from .visualize import VAEPlotter
+from .ladder_variational_autoencoders import LadderVAE

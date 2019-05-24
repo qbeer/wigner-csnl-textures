@@ -4,7 +4,7 @@ import os
 
 
 class ModelTrainer:
-    def __init__(self, model, data_generator, loss_fn="normal", lr=1e-3, decay=5e-5, observation_noise=1e-3, beta=1e-12):
+    def __init__(self, model, data_generator, loss_fn="normal", lr=1e-7, decay=5e-5, observation_noise=1e-3, beta=1e-12):
         assert loss_fn in str(["normal", "normalDiag", "binary", None]),\
             "Loss function should be in [\'normal\', \'normalDiag\', \'None\' (bernoulli), \'binary\']"
         args = loss_fn, lr, decay, observation_noise, beta
