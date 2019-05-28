@@ -52,7 +52,7 @@ class LadderVAE:
         return decoder
 
     def decoder1(self):
-        latent1 = Input(shape=(self.latent_dim1 * 2,))
+        latent1 = Input(shape=(self.latent_dim1,))
         x = Dense(256)(latent1)
         x = PReLU()(x)
         x = Dense(512)(x)
@@ -65,7 +65,7 @@ class LadderVAE:
 
     def _importance_weight(self, args):
         input1, input2 = args
-        res = tf.concat([input1, input2], axis=1)
+        res = input1 * 0.5 + input2 * 0.5
         return res
 
     def _split(self, _input):
@@ -117,10 +117,19 @@ class LadderVAE:
         model.compile(optimizer=RMSprop(lr=lr, decay=decay),
                       loss=self.bernoulli)
 
-        self.latent_model = model
+        # Generative model
+        latent_input = Input(shape=(self.latent_dim2,))
+        gen2 = decoder2(latent_input)
+        gen_reco = decoder1(gen2)
+        generative_model = Model(latent_input, gen_reco)
+
+        # Model for later inference
+        z2 = self.z2
+        self.latent_model = Model(input_img, outputs=[reco, z2])
+
         self.latent_dim = self.latent_dim2
 
-        return model, model
+        return model, generative_model
 
     def bernoulli(self, x_true, x_reco):
         return -tf.reduce_mean(tfd.Bernoulli(x_reco)._log_prob(x_true)) - self.beta * 0.5 * K.mean(
