@@ -115,7 +115,7 @@ class LadderVAE:
 
         model = Model(input_img, reco)
         model.compile(optimizer=RMSprop(lr=lr, decay=decay),
-                      loss=self.bernoulli)
+                      loss=self.bernoulli, metrics=[])
 
         # Generative model
         latent_input = Input(shape=(self.latent_dim2,))
@@ -132,5 +132,9 @@ class LadderVAE:
         return model, generative_model
 
     def bernoulli(self, x_true, x_reco):
-        return -tf.reduce_mean(tfd.Bernoulli(x_reco)._log_prob(x_true)) - self.beta * 0.5 * K.mean(
+        return -tf.reduce_mean(tfd.Bernoulli(x_reco)._log_prob(x_true)) \
+            + self.KL_divergence(None, None)
+
+    def KL_divergence(self, x, y):
+        return - self.beta * 0.5 * K.mean(
             1 + self.z2_log_sigma - K.square(self.z2_mean) - K.exp(self.z2_log_sigma), axis=-1)
