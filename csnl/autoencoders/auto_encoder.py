@@ -1,17 +1,13 @@
-from keras.optimizers import Adam
-from keras.models import Model
-from keras.layers import Input, Dense
 from ..encoder import Encoder
-from abc import abstractmethod
-import tensorflow as tf
-import tensorflow_probability as tfp
-tfd = tfp.distributions
+from ..losses import Losses
+from keras.layers import Input, Dense
+from keras.models import Model
+from keras.optimizers import Adam
 
 
 class AutoEncoder(Encoder):
     def get_compiled_model(self, *args):
-        loss_fn, lr, decay, self.observation_noise, self.beta = args
-        self.beta = 0  # no KL loss (!)
+        loss_fn, lr, decay, observation_noise, _ = args
         input_img = Input(batch_shape=self.input_shape)
         encoder = self._encoder()
         decoder = self._decoder()
@@ -27,8 +23,8 @@ class AutoEncoder(Encoder):
 
         self.latent_model = Model(input_img, outputs=[decoded, latent])
 
-        self.loss_fn = self._get_loss(loss_fn)
+        losses = Losses(loss_fn, observation_noise)
 
         model = Model(input_img, decoded)
-        model.compile(optimizer=Adam(lr=lr, decay=decay), loss=self.loss_fn)
+        model.compile(optimizer=Adam(lr=lr, decay=decay), loss=losses.loss)
         return model, generative_model

@@ -6,6 +6,7 @@ from abc import abstractmethod
 import keras.backend as K
 import tensorflow_probability as tfp
 from ..encoder import Encoder
+from ..losses import Losses
 tfd = tfp.distributions
 
 
@@ -17,22 +18,21 @@ class VariationalAutoEncoder(Encoder):
         return z_mean + K.exp(z_log_sigma) * epsilon
 
     def get_compiled_model(self, *args):
-        loss_fn, lr, decay, self.observation_noise, beta = args
+        loss_fn, lr, decay, self.observation_noise, self.beta = args
         input_img = Input(batch_shape=self.input_shape)
 
         encoder = self._encoder()
+        decoder = self._decoder()
+
         encoded = encoder(input_img)
 
         # Reparametrization
         self.z_mean = Dense(self.latent_dim)(encoded)
         self.z_log_sigma = Dense(self.latent_dim)(encoded)
-        z = Lambda(self._sampling, name="latent")([self.z_mean, self.z_log_sigma])
+        z = Lambda(self._sampling, name="latent")(
+            [self.z_mean, self.z_log_sigma])
 
-        decoder = self._decoder()
         reco = decoder(z)
-
-        self.beta = beta
-        self.loss_fn = self._get_loss(loss_fn)
 
         # Generator model
         decoder_input = Input(shape=(self.latent_dim,))
@@ -42,8 +42,11 @@ class VariationalAutoEncoder(Encoder):
         # Model for later inference
         self.latent_model = Model(input_img, outputs=[reco, z])
 
+        losses = Losses(loss_fn, self.observation_noise,
+                        self.beta, self.z_mean, self.z_log_sigma)
+
         model = Model(input_img, reco)
         model.compile(optimizer=RMSprop(lr=lr, decay=decay),
-                      loss=self.loss_fn, metrics=[self.KL_divergence])
+                      loss=losses.loss, metrics=[losses.KL_divergence])
 
         return model, generator
