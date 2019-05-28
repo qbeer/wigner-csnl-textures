@@ -64,8 +64,8 @@ class LadderVAE:
         return decoder
 
     def _importance_weight(self, args):
-        input1, input2 = args
-        res = input1 * 0.5 + input2 * 0.5
+        z1, d1 = args
+        res = z1 * 0.85 + d1 * 0.15
         return res
 
     def _split(self, _input):
