@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from keras.layers import Input, Dense, PReLU, Lambda
+from keras.layers import Input, Dense, PReLU, Lambda, Add
 from keras.models import Model
 import keras.backend as K
 from keras.optimizers import RMSprop, Adam
@@ -23,19 +23,17 @@ class LadderVAE:
         x = PReLU()(x)
         x = Dense(256)(x)
         x = PReLU()(x)
-        x = Dense(self.latent_dim1 * 2)(x)
         encoder = Model(input_tensor, x)
         return encoder
 
     def encoder2(self):
-        input_tensor = Input(shape=(self.latent_dim1 * 2,))
+        input_tensor = Input(shape=(self.latent_dim1,))
         x = Dense(256)(input_tensor)
         x = PReLU()(x)
         x = Dense(128)(x)
         x = PReLU()(x)
         x = Dense(128)(x)
         x = PReLU()(x)
-        x = Dense(self.latent_dim2 * 2)(x)
         encoder = Model(input_tensor, x)
         return encoder
 
@@ -63,20 +61,30 @@ class LadderVAE:
         decoder = Model(latent1, reco)
         return decoder
 
-    def _importance_weight(self, args):
-        z1, d1 = args
-        res = z1 * 0.85 + d1 * 0.15
+    def _multiply(self, args):
+        z1_sigma, _z1_mean, _z1_sigma, d1_mean, d1_sigma = args
+        res = z1_sigma * (_z1_mean * _z1_sigma**(-2) + d1_mean * d1_sigma**(-2))
         return res
 
     def _split(self, _input):
         return tf.split(axis=1, value=_input, num_or_size_splits=2)
 
+    def _sqr(self, _input):
+        return K.pow(_input, -2)
+
+    def _invert(self, _input):
+        return K.pow(_input, -1)
+
+    def _sample(self, args):
+        print("sample")
+        z_mean, z_sigma = args
+        dist = tfd.Normal(loc=z_mean, scale=z_sigma)
+        return dist.sample()
+
     def _sampling(self, args):
         z_mean, z_log_sigma = args
         epsilon = K.random_normal(
-            shape=(self.BATCH_SIZE, self.latent_dim2 if self.mean ==
-                   None else self.latent_dim1),
-            mean=0 if self.mean == None else self.mean, stddev=1 if self.var == None else tf.sqrt(self.var))
+            shape=(self.BATCH_SIZE, self.latent_dim2), mean=0, stddev=1)
         return z_mean + K.exp(z_log_sigma) * epsilon
 
     def get_compiled_model(self, *args):
@@ -93,7 +101,7 @@ class LadderVAE:
         d2 = encoder2(d1)
 
         # Reparametrization 1 & 2
-        self.z2_mean, self.z2_log_sigma = Lambda(self._split)(d2)
+        self.z2_mean, self.z2_log_sigma = Dense(self.latent_dim2)(d2), Dense(self.latent_dim2)(d2)
 
         self.mean, self.var = None, None
         self.z2 = Lambda(self._sampling, name="latent2")(
@@ -101,15 +109,25 @@ class LadderVAE:
 
         self.mean, self.var = tf.nn.moments(self.z2, axes=[0, 1])
 
-        self.z1 = decoder2(self.z2)
+        self._z1 = decoder2(self.z2)
 
-        self.d1_mean, self.d1_log_sigma = Lambda(self._split)(d1)
-        d1 = Lambda(self._sampling, name="latentD1")(
-            [self.d1_mean, self.d1_log_sigma])
+        self._z1_mean, self._z1_sigma = Dense(self.latent_dim1)(
+            self._z1), Dense(self.latent_dim1)(self._z1)
 
-        self.z1 = Lambda(self._importance_weight)([self.z1, d1])
+        self.d1_mean, self.d1_sigma = Dense(
+            self.latent_dim1)(d1), Dense(self.latent_dim1)(d1)
+
+        # Combine mean and sigma
+        self.z1_sigma = Lambda(self._invert)(
+            Add()([Lambda(self._sqr)(self._z1_sigma), Lambda(self._sqr)(self.d1_sigma)]))
+
+        self.z1_mean = Lambda(self._multiply)([self.z1_sigma, self._z1_mean, self._z1_sigma, self.d1_mean, self.d1_sigma])
+
+        self.z1 = Lambda(self._sample)([self.z1_mean, self.z1_sigma])
 
         reco = decoder1(self.z1)
+
+        print("REco shape : ", reco.get_shape())
 
         self.beta = beta
 
@@ -123,7 +141,7 @@ class LadderVAE:
         gen_reco = decoder1(gen2)
         generative_model = Model(latent_input, gen_reco)
 
-        # Model for later inference
+        # Model for latent inference
         z2 = self.z2
         self.latent_model = Model(input_img, outputs=[reco, z2])
 
