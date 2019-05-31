@@ -61,19 +61,21 @@ class LadderVAE:
         decoder = Model(latent1, reco)
         return decoder
 
-    def _multiply(self, args):
-        z1_sigma, _z1_mean, _z1_sigma, d1_mean, d1_sigma = args
-        res = z1_sigma * (_z1_mean * _z1_sigma**(-2) + d1_mean * d1_sigma**(-2))
-        return res
+    def _get_sigma(self, args):
+        sigma1, sigma2 = args
+        return K.pow(K.pow(sigma1, -2) + K.pow(sigma2, -2), -1)
 
-    def _split(self, _input):
-        return tf.split(axis=1, value=_input, num_or_size_splits=2)
+    def _get_mean(self, args):
+        mean1, sigma1, mean2, sigma2 = args
+        return (mean1 * K.pow(sigma1, -2) + mean2 * K.pow(sigma2, -2)) * self._get_sigma([sigma1, sigma2])
 
-    def _sqr(self, _input):
-        return K.pow(_input, -2)
+    def _get_sigma_gen(self, args):
+        sigma1 = args
+        return K.pow(sigma1, 2)
 
-    def _invert(self, _input):
-        return K.pow(_input, -1)
+    def _get_mean_gen(self, args):
+        mean1, sigma1 = args
+        return mean1 * K.pow(sigma1, -2) * self._get_sigma_gen(sigma1)
 
     def _sample(self, args):
         print("sample")
@@ -81,14 +83,14 @@ class LadderVAE:
         dist = tfd.Normal(loc=z_mean, scale=z_sigma)
         return dist.sample()
 
-    def _sampling(self, args):
+    def _reparametrize(self, args):
         z_mean, z_log_sigma = args
         epsilon = K.random_normal(
             shape=(self.BATCH_SIZE, self.latent_dim2), mean=0, stddev=1)
         return z_mean + K.exp(z_log_sigma) * epsilon
 
     def get_compiled_model(self, *args):
-        _, lr, decay, self.observation_noise, beta = args
+        _, lr, decay, self.observation_noise, self.beta = args
         input_img = Input(batch_shape=self.input_shape)
 
         encoder1 = self.encoder1()
@@ -97,39 +99,38 @@ class LadderVAE:
         decoder2 = self.decoder2()
 
         d1 = encoder1(input_img)
-
         d2 = encoder2(d1)
 
-        # Reparametrization 1 & 2
-        self.z2_mean, self.z2_log_sigma = Dense(self.latent_dim2)(d2), Dense(self.latent_dim2)(d2)
+        # Reparametrization deepest layer
+        self.z2_mean, self.z2_log_sigma = Dense(
+            self.latent_dim2)(d2), Dense(self.latent_dim2)(d2)
 
-        self.mean, self.var = None, None
-        self.z2 = Lambda(self._sampling, name="latent2")(
+        self.z2 = Lambda(self._reparametrize, name="latent")(
             [self.z2_mean, self.z2_log_sigma])
 
-        self.mean, self.var = tf.nn.moments(self.z2, axes=[0, 1])
+        # Top down and bottom up mean and variance calculation
+        self.z1_intermediate = decoder2(self.z2)
 
-        self._z1 = decoder2(self.z2)
+        self.z1_mean_TD, self.z1_sigma_TD = Dense(self.latent_dim1)(
+            self.z1_intermediate), Dense(self.latent_dim1)(self.z1_intermediate)
 
-        self._z1_mean, self._z1_sigma = Dense(self.latent_dim1)(
-            self._z1), Dense(self.latent_dim1)(self._z1)
-
-        self.d1_mean, self.d1_sigma = Dense(
+        self.z1_mean_BU, self.z1_sigma_BU = Dense(
             self.latent_dim1)(d1), Dense(self.latent_dim1)(d1)
 
         # Combine mean and sigma
-        self.z1_sigma = Lambda(self._invert)(
-            Add()([Lambda(self._sqr)(self._z1_sigma), Lambda(self._sqr)(self.d1_sigma)]))
+        self.z1_sigma = Lambda(self._get_sigma)(
+            [self.z1_sigma_BU, self.z1_sigma_TD])
 
-        self.z1_mean = Lambda(self._multiply)([self.z1_sigma, self._z1_mean, self._z1_sigma, self.d1_mean, self.d1_sigma])
+        self.z1_mean = Lambda(self._get_mean)(
+            [self.z1_mean_TD, self.z1_sigma_TD, self.z1_mean_BU, self.z1_sigma_BU])
 
-        self.z1 = Lambda(self._sample)([self.z1_mean, self.z1_sigma])
+        # Samlpe z1!
+        self.z1 = Lambda(self._sample, name="sampling_z1")(
+            [self.z1_mean, self.z1_sigma])
 
         reco = decoder1(self.z1)
 
-        print("REco shape : ", reco.get_shape())
-
-        self.beta = beta
+        print("Reco shape : ", reco.get_shape())
 
         model = Model(input_img, reco)
         model.compile(optimizer=RMSprop(lr=lr, decay=decay),
@@ -151,8 +152,13 @@ class LadderVAE:
 
     def bernoulli(self, x_true, x_reco):
         return -tf.reduce_mean(tfd.Bernoulli(x_reco)._log_prob(x_true)) \
-            + self.KL_divergence(None, None)
+            + self.KL_divergence(None, None) #+ self.KL_divergence1(None, None)
 
     def KL_divergence(self, x, y):
         return - self.beta * 0.5 * K.mean(
             1 + self.z2_log_sigma - K.square(self.z2_mean) - K.exp(self.z2_log_sigma), axis=-1)
+
+    def KL_divergence1(self, x, y):
+        mean, sigma = tf.nn.moments(self.z1, axes=[0])
+        return - self.beta * K.mean(K.log(self.z1_sigma) / K.log(sigma)\
+             + (K.pow(sigma, 2) + K.pow(mean - self.z1_mean, 2)/(2 * K.pow(sigma, 2)) - 0.5), axis=-1)
