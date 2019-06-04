@@ -18,7 +18,7 @@ class DataGenerator:
         def train_generator(_it):
             while True:
                 batch_x, batch_y = next(_it)
-                yield (self._contrast(batch_x), batch_y)
+                yield self._contrast(batch_x, batch_y)
         return train_generator(self.flow())
 
     def flattened_flow(self):
@@ -37,18 +37,21 @@ class DataGenerator:
             while True:
                 batch_x, batch_y = next(_it)
                 batch_x, batch_y = self._contrast(
-                    batch_x), self._contrast(batch_y)
+                    batch_x, batch_y)
                 yield batch_x.reshape(self.BATCH_SIZE, image_dim), batch_y.reshape(self.BATCH_SIZE, image_dim)
 
         return train_generator(self.flow())
 
-    def _contrast(self, images):
-        contrasted_images = np.zeros(shape=images.shape)
-        for ind in range(images.shape[0]):
-
-            contrasted_images[ind] = np.clip(
-                np.random.rand() * 2. * (images[ind] - 0.5) + 0.5, 0, 1)
-        return contrasted_images
+    def _contrast(self, images_x, images_y):
+        contrasted_images_x = np.zeros(shape=images_x.shape)
+        contrasted_images_y = np.zeros(shape=images_y.shape)
+        for ind in range(images_x.shape[0]):
+            r_contrast = np.random.rand() * 2.
+            contrasted_images_x[ind] = np.clip(
+                r_contrast * (images_x[ind] - 0.5) + 0.5, 0, 1)
+            contrasted_images_y[ind] = np.clip(
+                r_contrast * (images_y[ind] - 0.5) + 0.5, 0, 1)
+        return contrasted_images_x, contrasted_images_y
 
     def validation_data(self):
         return self.TEST, self.TEST
