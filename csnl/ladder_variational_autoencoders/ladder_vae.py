@@ -1,3 +1,4 @@
+from ..losses import Losses
 from abc import abstractmethod
 from keras.layers import Input, Dense, ReLU, Lambda, Add
 from keras.models import Model
@@ -14,7 +15,7 @@ class LadderVAE:
         self.latent_dim1 = latent_dim1
         self.latent_dim2 = latent_dim2
         self.BATCH_SIZE = self.input_shape[0]
-        self._mean_variance_input_shape = 512 # arbitrary
+        self._mean_variance_input_shape = 512  # arbitrary
 
     @abstractmethod
     def encoder1(self):
@@ -66,7 +67,7 @@ class LadderVAE:
         return z_mean + K.exp(z_log_sigma) * epsilon
 
     def get_compiled_model(self, *args):
-        _, lr, decay, self.observation_noise, self.beta = args
+        loss_fn, lr, decay, self.observation_noise, self.beta = args
         input_img = Input(batch_shape=self.input_shape)
 
         encoder1 = self.encoder1()
@@ -85,10 +86,14 @@ class LadderVAE:
         self.z2 = Lambda(self._reparametrize, name="latent")(
             [self.z2_mean, self.z2_log_sigma])
 
+        losses = Losses(loss_fn, self.observation_noise,
+                        self.beta, self.z2_mean, self.z2_log_sigma)
+
         # Top down and bottom up mean and variance calculation
         self.z1_intermediate = decoder2(self.z2)
 
-        self.z1_mean_TD, self.z1_sigma_TD = mean_var_model_for_top_down_calc(self.z1_intermediate)
+        self.z1_mean_TD, self.z1_sigma_TD = mean_var_model_for_top_down_calc(
+            self.z1_intermediate)
 
         self.z1_mean_BU, self.z1_sigma_BU = Dense(
             self.latent_dim1)(d1), Dense(self.latent_dim1)(d1)
@@ -106,11 +111,9 @@ class LadderVAE:
 
         reco = decoder1(self.z1)
 
-        print("Reco shape : ", reco.get_shape())
-
         model = Model(input_img, reco)
         model.compile(optimizer=RMSprop(lr=lr, decay=decay),
-                      loss=self.bernoulli, metrics=[self.KL_divergence])
+                      loss=losses._normal, metrics=[losses.KL_divergence])
 
         # Generative model
         latent_input = Input(shape=(self.latent_dim2,))
@@ -128,7 +131,7 @@ class LadderVAE:
 
         # Samlping
         gen2 = Lambda(self._sample)(
-            [gen_mean, gen_sigma])        
+            [gen_mean, gen_sigma])
 
         gen_reco = decoder1(gen2)
         generative_model = Model(latent_input, gen_reco)
@@ -140,11 +143,3 @@ class LadderVAE:
         self.latent_dim = self.latent_dim2
 
         return model, generative_model, latent_model
-
-    def bernoulli(self, x_true, x_reco):
-        return -tf.reduce_mean(tfd.Bernoulli(x_reco)._log_prob(x_true)) \
-            + self.KL_divergence(None, None)
-
-    def KL_divergence(self, x, y):
-        return - self.beta * 0.5 * K.mean(
-            1 + self.z2_log_sigma - K.square(self.z2_mean) - K.exp(self.z2_log_sigma), axis=-1)

@@ -1,4 +1,4 @@
-from csnl import ConvLadderVAE, ModelTrainer, VAEPlotter, DataGenerator
+from csnl import ConvLadderVAE, ModelTrainer, VAEPlotter, DataGenerator, DenseLadderVAE
 import os
 
 data_gen = DataGenerator(image_shape=(28, 28, 1), batch_size=70,

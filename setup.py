@@ -3,7 +3,7 @@ from setuptools import find_packages
 
 setup(
     name='csnl-vae-olaralex',
-    version='1.59dev',
+    version='1.61dev',
     author="Alex Olar",
     author_email="olaralex@caesar.elte.hu",
     packages=find_packages(),
