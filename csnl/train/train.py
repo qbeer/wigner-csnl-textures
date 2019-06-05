@@ -9,8 +9,7 @@ class ModelTrainer:
             "Loss function should be in [\'normal\', \'normalDiag\', \'None\' (bernoulli), \'binary\']"
         args = loss_fn, lr, decay, observation_noise, beta
         self._model = model
-        self.model, self.generator = self._model.get_compiled_model(*args)
-        self.latent_model = self._model.latent_model
+        self.model, self.generator, self.latent_model = self._model.get_compiled_model(*args)
         self.latent_dim = model.latent_dim
         self.data_generator = data_generator
         self.saved = False

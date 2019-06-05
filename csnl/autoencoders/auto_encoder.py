@@ -21,10 +21,10 @@ class AutoEncoder(Encoder):
         _decoded = decoder(latent_input)
         generative_model = Model(latent_input, _decoded)
 
-        self.latent_model = Model(input_img, outputs=[decoded, latent])
+        latent_model = Model(input_img, outputs=[decoded, latent])
 
         losses = Losses(loss_fn, observation_noise)
 
         model = Model(input_img, decoded)
         model.compile(optimizer=Adam(lr=lr, decay=decay), loss=losses.loss)
-        return model, generative_model
+        return model, generative_model, latent_model

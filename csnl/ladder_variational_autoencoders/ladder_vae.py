@@ -14,56 +14,26 @@ class LadderVAE:
         self.latent_dim1 = latent_dim1
         self.latent_dim2 = latent_dim2
         self.BATCH_SIZE = self.input_shape[0]
-        self.N = 512 # arbitrary
+        self._mean_variance_input_shape = 512 # arbitrary
 
+    @abstractmethod
     def encoder1(self):
-        input_tensor = Input(shape=self.input_shape[1:])
-        x = Dense(512)(input_tensor)
-        x = ReLU()(x)
-        x = Dense(256)(x)
-        x = ReLU()(x)
-        x = Dense(256)(x)
-        x = ReLU()(x)
-        x = Dense(self.latent_dim1)(x)
-        encoder = Model(input_tensor, x)
-        return encoder
+        pass
 
+    @abstractmethod
     def encoder2(self):
-        input_tensor = Input(shape=(self.latent_dim1,))
-        x = Dense(256)(input_tensor)
-        x = ReLU()(x)
-        x = Dense(128)(x)
-        x = ReLU()(x)
-        x = Dense(128)(x)
-        x = ReLU()(x)
-        encoder = Model(input_tensor, x)
-        return encoder
+        pass
 
+    @abstractmethod
     def decoder2(self):
-        latent2 = Input(shape=(self.latent_dim2,))
-        x = Dense(128)(latent2)
-        x = ReLU()(x)
-        x = Dense(256)(x)
-        x = ReLU()(x)
-        x = Dense(self.N)(x)
-        reco = ReLU()(x)
-        decoder = Model(latent2, reco)
-        return decoder
+        pass
 
+    @abstractmethod
     def decoder1(self):
-        latent1 = Input(shape=(self.latent_dim1,))
-        x = Dense(256)(latent1)
-        x = ReLU()(x)
-        x = Dense(512)(x)
-        x = ReLU()(x)
-        x = Dense(1024)(x)
-        x = ReLU()(x)
-        reco = Dense(self.input_shape[1])(x)
-        decoder = Model(latent1, reco)
-        return decoder
+        pass
 
     def mean_variance_model(self):
-        inp = Input(shape=(self.N,))
+        inp = Input(shape=(self._mean_variance_input_shape,))
         mean, var = Dense(self.latent_dim1)(inp), Dense(self.latent_dim1)(inp)
         model = Model(inp, [mean, var])
         return model
@@ -165,11 +135,11 @@ class LadderVAE:
 
         # Model for latent inference
         z2 = self.z2
-        self.latent_model = Model(input_img, outputs=[reco, z2])
+        latent_model = Model(input_img, outputs=[reco, z2])
 
         self.latent_dim = self.latent_dim2
 
-        return model, generative_model
+        return model, generative_model, latent_model
 
     def bernoulli(self, x_true, x_reco):
         return -tf.reduce_mean(tfd.Bernoulli(x_reco)._log_prob(x_true)) \

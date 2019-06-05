@@ -1,1 +1,1 @@
-from .ladder_vae import LadderVAE
+from .conv_lvae import ConvLadderVAE
