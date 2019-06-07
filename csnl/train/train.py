@@ -5,8 +5,8 @@ import os
 
 class ModelTrainer:
     def __init__(self, model, data_generator, loss_fn="normal", lr=1e-7, decay=5e-5, observation_noise=1e-3, beta=1e-12):
-        assert loss_fn in str(["normal", "normalDiag", "binary", None]),\
-            "Loss function should be in [\'normal\', \'normalDiag\', \'None\' (bernoulli), \'binary\']"
+        assert loss_fn in str(["normal", "normalDiag", "binary", "bernoulli"]),\
+            "Loss function should be in [\'normal\', \'normalDiag\', \'bernoulli\', \'binary\']"
         args = loss_fn, lr, decay, observation_noise, beta
         self._model = model
         self.model, self.generator, self.latent_model = self._model.get_compiled_model(*args)

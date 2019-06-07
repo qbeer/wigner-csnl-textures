@@ -15,7 +15,7 @@ class LadderVAE:
         self.latent_dim1 = latent_dim1
         self.latent_dim2 = latent_dim2
         self.BATCH_SIZE = self.input_shape[0]
-        self._mean_variance_input_shape = 512  # arbitrary
+        self._mean_variance_input_shape = 1024  # arbitrary
 
     @abstractmethod
     def encoder1(self):

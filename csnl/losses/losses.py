@@ -19,7 +19,7 @@ class Losses:
         losses = {"binary": self._binary,
                   "normal": self._normal,
                   "normalDiag": self._normalDiag,
-                  None: self._bernoulli}
+                  "bernoulli": self._bernoulli}
         return losses[loss_fn]
 
     """
