@@ -9,7 +9,8 @@ class ModelTrainer:
             "Loss function should be in [\'normal\', \'normalDiag\', \'bernoulli\', \'binary\']"
         args = loss_fn, lr, decay, observation_noise, beta
         self._model = model
-        self.model, self.generator, self.latent_model = self._model.get_compiled_model(*args)
+        self.model, self.generator, self.latent_model = self._model.get_compiled_model(
+            *args)
         self.latent_dim = model.latent_dim
         self.data_generator = data_generator
         self.saved = False
@@ -46,14 +47,4 @@ class ModelTrainer:
         """
         self.latent_model.save(os.getcwd() + "/latent_model.h5")
         self.saved = True
-        print("OK!")
-
-    def load_models(self):
-        if not self.saved:
-            print("The models have not been trained or saved yet.")
-            return
-        print("Loading models...\t", end='')
-        self.model = load_model(os.getcwd() + "/model.h5")
-        self.generator = load_model(os.getcwd() + "/generator-model.h5")
-        self.latent_model = load_model(os.getcwd() + "/latent_model.h5")
         print("OK!")
