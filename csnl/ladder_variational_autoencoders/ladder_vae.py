@@ -10,12 +10,12 @@ tfd = tfp.distributions
 
 
 class LadderVAE:
-    def __init__(self, input_shape, latent_dim1, latent_dim2):
+    def __init__(self, input_shape, latent_dim1, latent_dim2, mean_variance_input_shape=256):
         self.input_shape = input_shape
         self.latent_dim1 = latent_dim1
         self.latent_dim2 = latent_dim2
         self.BATCH_SIZE = self.input_shape[0]
-        self._mean_variance_input_shape = 1024  # arbitrary
+        self._mean_variance_input_shape = mean_variance_input_shape # arbitrary
 
     @abstractmethod
     def encoder1(self):
