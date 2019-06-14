@@ -41,11 +41,11 @@ class LadderVAE:
 
     def _get_sigma(self, args):
         sigma1, sigma2 = args
-        return K.pow(K.pow(sigma1, -2) + K.pow(sigma2, -2), -1)
+        return K.pow(K.pow(sigma1 + 1e-12, -2) + K.pow(sigma2 + 1e-12, -2) + 1e-12, -1)
 
     def _get_mean(self, args):
         mean1, sigma1, mean2, sigma2 = args
-        return (mean1 * K.pow(sigma1, -2) + mean2 * K.pow(sigma2, -2)) * self._get_sigma([sigma1, sigma2])
+        return (mean1 * K.pow(sigma1 + 1e-12, -2) + mean2 * K.pow(sigma2 + 1e-12, -2)) * self._get_sigma([sigma1, sigma2])
 
     def _get_sigma_gen(self, args):
         sigma1 = args
@@ -53,7 +53,7 @@ class LadderVAE:
 
     def _get_mean_gen(self, args):
         mean1, sigma1 = args
-        return mean1 * K.pow(sigma1, -2) * self._get_sigma_gen(sigma1)
+        return mean1 * K.pow(sigma1 + 1e-12, -2) * self._get_sigma_gen(sigma1)
 
     def _sample(self, args):
         z_mean, z_sigma = args
