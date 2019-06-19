@@ -15,7 +15,7 @@ class LadderVAE:
         self.latent_dim1 = latent_dim1
         self.latent_dim2 = latent_dim2
         self.BATCH_SIZE = self.input_shape[0]
-        self._mean_variance_input_shape = mean_variance_input_shape # arbitrary
+        self._mean_variance_input_shape = mean_variance_input_shape  # arbitrary
 
     @abstractmethod
     def encoder1(self):
@@ -33,31 +33,34 @@ class LadderVAE:
     def decoder1(self):
         pass
 
-    def mean_variance_model(self):
+    def mean_log_variance_model(self):
         inp = Input(shape=(self._mean_variance_input_shape,))
-        mean, var = Dense(self.latent_dim1)(inp), Dense(self.latent_dim1)(inp)
-        model = Model(inp, [mean, var])
+        mean, log_var = Dense(self.latent_dim1)(
+            inp), Dense(self.latent_dim1)(inp)
+        model = Model(inp, [mean, log_var])
         return model
 
-    def _get_sigma(self, args):
-        sigma1, sigma2 = args
-        return K.pow(K.pow(sigma1 + 1e-12, -2) + K.pow(sigma2 + 1e-12, -2) + 1e-12, -1)
+    def _get_log_sigma(self, args):
+        log_sigma1, log_sigma2 = args
+        return K.pow(K.pow(K.exp(log_sigma1) + 1e-12, -2) +
+                     K.pow(K.exp(log_sigma2) + 1e-12, -2) + 1e-12, -1)
 
     def _get_mean(self, args):
-        mean1, sigma1, mean2, sigma2 = args
-        return (mean1 * K.pow(sigma1 + 1e-12, -2) + mean2 * K.pow(sigma2 + 1e-12, -2)) * self._get_sigma([sigma1, sigma2])
+        mean1, log_sigma1, mean2, log_sigma2 = args
+        return (mean1 * K.pow(K.exp(log_sigma1) + 1e-12, -2) +
+                mean2 * K.pow(K.exp(log_sigma2) + 1e-12, -2)) * self._get_log_sigma([log_sigma1, log_sigma2])
 
-    def _get_sigma_gen(self, args):
-        sigma1 = args
-        return K.pow(sigma1, 2)
+    def _get_log_sigma_gen(self, args):
+        log_sigma1 = args
+        return K.pow(K.exp(log_sigma1), 2)
 
     def _get_mean_gen(self, args):
-        mean1, sigma1 = args
-        return mean1 * K.pow(sigma1 + 1e-12, -2) * self._get_sigma_gen(sigma1)
+        mean1, log_sigma1 = args
+        return mean1 * K.pow(K.exp(log_sigma1) + 1e-12, -2) * self._get_log_sigma_gen(log_sigma1)
 
     def _sample(self, args):
-        z_mean, z_sigma = args
-        dist = tfd.Normal(loc=z_mean, scale=z_sigma)
+        z_mean, z_log_sigma = args
+        dist = tfd.Normal(loc=z_mean, scale=K.exp(z_log_sigma))
         return dist.sample()
 
     def _reparametrize(self, args):
@@ -74,7 +77,7 @@ class LadderVAE:
         encoder2 = self.encoder2()
         decoder1 = self.decoder1()
         decoder2 = self.decoder2()
-        mean_var_model_for_top_down_calc = self.mean_variance_model()
+        mean_log_var_model_for_top_down_calc = self.mean_log_variance_model()
 
         d1 = encoder1(input_img)
         d2 = encoder2(d1)
@@ -86,52 +89,49 @@ class LadderVAE:
         self.z2 = Lambda(self._reparametrize, name="latent")(
             [self.z2_mean, self.z2_log_sigma])
 
-        losses = Losses(loss_fn, self.observation_noise,
-                        self.beta, self.z2_mean, self.z2_log_sigma)
-
         # Top down and bottom up mean and variance calculation
         self.z1_intermediate = decoder2(self.z2)
 
-        self.z1_mean_TD, self.z1_sigma_TD = mean_var_model_for_top_down_calc(
+        self.z1_mean_TD, self.z1_log_sigma_TD = mean_log_var_model_for_top_down_calc(
             self.z1_intermediate)
 
-        self.z1_mean_BU, self.z1_sigma_BU = Dense(
+        self.z1_mean_BU, self.z1_log_sigma_BU = Dense(
             self.latent_dim1)(d1), Dense(self.latent_dim1)(d1)
 
         # Combine mean and sigma
-        self.z1_sigma = Lambda(self._get_sigma)(
-            [self.z1_sigma_BU, self.z1_sigma_TD])
+        self.z1_log_sigma = Lambda(self._get_log_sigma)(
+            [self.z1_log_sigma_BU, self.z1_log_sigma_TD])
 
         self.z1_mean = Lambda(self._get_mean)(
-            [self.z1_mean_TD, self.z1_sigma_TD, self.z1_mean_BU, self.z1_sigma_BU])
+            [self.z1_mean_TD, self.z1_log_sigma_TD, self.z1_mean_BU, self.z1_log_sigma_BU])
 
         # Samlpe z1!
         self.z1 = Lambda(self._sample, name="sampling_z1")(
-            [self.z1_mean, self.z1_sigma])
+            [self.z1_mean, self.z1_log_sigma])
 
         reco = decoder1(self.z1)
 
         model = Model(input_img, reco)
         model.compile(optimizer=RMSprop(lr=lr, decay=decay),
-                      loss=losses.loss, metrics=[losses.KL_divergence])
+                      loss=self._get_loss(loss_fn), metrics=[self._KL_divergence])
 
         # Generative model
         latent_input = Input(shape=(self.latent_dim2,))
         gen2 = decoder2(latent_input)
 
         # Using same TD mean var generator as before
-        gen_mean, gen_sigma = mean_var_model_for_top_down_calc(gen2)
+        gen_mean, gen_log_sigma = mean_log_var_model_for_top_down_calc(gen2)
 
         # Combine mean and sigma for generative model
-        gen_sigma = Lambda(self._get_sigma_gen)(
-            [gen_sigma])
+        gen_log_sigma = Lambda(self._get_log_sigma_gen)(
+            [gen_log_sigma])
 
         gen_mean = Lambda(self._get_mean_gen)(
-            [gen_mean, gen_sigma])
+            [gen_mean, gen_log_sigma])
 
         # Samlping
         gen2 = Lambda(self._sample)(
-            [gen_mean, gen_sigma])
+            [gen_mean, gen_log_sigma])
 
         gen_reco = decoder1(gen2)
         generative_model = Model(latent_input, gen_reco)
@@ -143,3 +143,37 @@ class LadderVAE:
         self.latent_dim = self.latent_dim2
 
         return model, generative_model, latent_model
+
+    def _get_loss(self, loss_fn):
+        losses = {"normal": self._normal,
+                  "bernoulli": self._bernoulli}
+        return losses[loss_fn]
+
+    """
+      Making it custom metric to be able to feed it to Keras API - actually no need for y_true, y_pred
+    """
+
+    def _KL_divergence(self, y_true, y_pred):
+        return - self.beta * (
+            0.5 * K.mean(1 + self.z2_log_sigma - K.square(self.z2_mean)
+                         - K.exp(self.z2_log_sigma), axis=-1) +
+            K.mean(self.z1_log_sigma_TD - self.z1_log_sigma +
+                   (K.exp(self.z1_log_sigma)**2 +
+                    (self.z1_mean - self.z1_mean_TD)**2)
+                   / (2. * K.exp(self.z1_log_sigma_TD)**2 + 1e-12) - 0.5))
+    """
+      For binarized input with KL term (!)
+    """
+
+    def _bernoulli(self, x_true, x_reco):
+        return -tf.reduce_mean(tfd.Bernoulli(x_reco)._log_prob(x_true)
+                               ) + self._KL_divergence(None, None)
+
+    """
+      For non binarized input with KL term(!)
+    """
+
+    def _normal(self, x_true, x_reco):
+        return -tf.reduce_mean(
+            tfd.Normal(x_reco, scale=self.observation_noise)._log_prob(x_true)
+        ) + self._KL_divergence(None, None)
