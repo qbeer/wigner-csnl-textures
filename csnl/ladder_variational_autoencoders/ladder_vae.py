@@ -113,7 +113,7 @@ class LadderVAE:
 
         model = Model(input_img, reco)
         model.compile(optimizer=RMSprop(lr=lr, decay=decay),
-                      loss=self._get_loss(loss_fn), metrics=[self._KL_divergence])
+                      loss=self._get_loss(loss_fn), metrics=[self._KL_divergence1, self._KL_divergence2])
 
         # Generative model
         latent_input = Input(shape=(self.latent_dim2,))
@@ -153,16 +153,22 @@ class LadderVAE:
       Making it custom metric to be able to feed it to Keras API - actually no need for y_true, y_pred
     """
 
-    def _KL_divergence(self, y_true, y_pred):
-        p2 = tfd.Normal(self.z2_mean, tf.exp(self.z2_log_sigma))
-        q2 = tfd.Normal(0, 1)
-        kl2 = tf.reduce_mean(tfd.kl_divergence(p2, q2), axis=-1)
-        p1 = tfd.Normal(self.z1_mean, self.z1_sigma)
-        q1 = tfd.Normal(self.z1_mean_TD, tf.exp(self.z1_log_sigma_TD))
-        kl1 = tf.reduce_mean(tfd.kl_divergence(
-            p1, q1, allow_nan_stats=False), axis=-1)
-        kl = kl2 + kl1
+    def _KL_divergence2(self, y_true, y_pred):
+        p = tfd.Normal(self.z2_mean, tf.exp(self.z2_log_sigma))
+        q = tfd.Normal(0, 1)
+        kl = tf.reduce_mean(tfd.kl_divergence(p, q), axis=-1)
         return self.beta * kl
+
+    def _KL_divergence1(self, y_true, y_pred):
+        p = tfd.Normal(self.z1_mean, self.z1_sigma)
+        q = tfd.Normal(self.z1_mean_TD, tf.exp(self.z1_log_sigma_TD))
+        kl = tf.reduce_mean(tfd.kl_divergence(
+            p, q, allow_nan_stats=False), axis=-1)
+        return self.beta * kl
+
+    def _KL_divergence(self, y_true, y_pred):
+        return self._KL_divergence1(None, None) + self._KL_divergence2(None, None)
+
     """
       For binarized input with KL term (!)
     """
