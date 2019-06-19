@@ -17,6 +17,7 @@ matplotlib = "*"
 setuptools = "*"
 wheel = "*"
 twine = "*"
+imageio = "*"
 
 [requires]
 python_version = "3.7"

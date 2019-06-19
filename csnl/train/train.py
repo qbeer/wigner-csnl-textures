@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from keras.models import load_model
 import os
+from ..visualize import GifCallBack
 
 
 class ModelTrainer:
@@ -14,6 +15,7 @@ class ModelTrainer:
         self.latent_dim = model.latent_dim
         self.data_generator = data_generator
         self.saved = False
+        self.gifCallBack = GifCallBack(self.data_generator, self.generator, self.latent_dim)
         self.model.summary()
 
     def fit(self, EPOCHS, STEPS, contrast=False):
@@ -22,12 +24,12 @@ class ModelTrainer:
                 self.data_generator.flow() if not contrast else self.data_generator.contrast_flow(),
                 steps_per_epoch=STEPS,
                 verbose=1, epochs=EPOCHS,
-                validation_data=self.data_generator.validation_data())
+                validation_data=self.data_generator.validation_data(), callbacks=[self.gifCallBack])
         except ValueError:
             self.history = self.model.fit_generator(
                 self.data_generator.flattened_flow() if not contrast else self.data_generator.flattened_contrast_flow(), steps_per_epoch=STEPS,
                 verbose=1, epochs=EPOCHS,
-                validation_data=self.data_generator.flattened_validation_data())
+                validation_data=self.data_generator.flattened_validation_data(), callbacks=[self.gifCallBack])
         finally:
             self._save_model()
             plt.title("Model loss")
