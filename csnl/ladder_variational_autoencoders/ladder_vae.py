@@ -40,7 +40,7 @@ class LadderVAE:
         model = Model(inp, [mean, log_var])
         return model
 
-    def _get_log_sigma(self, args):
+    def _get_sigma(self, args):
         log_sigma1, log_sigma2 = args
         return K.pow(K.pow(K.exp(log_sigma1) + 1e-12, -2) +
                      K.pow(K.exp(log_sigma2) + 1e-12, -2) + 1e-12, -1)
@@ -48,19 +48,19 @@ class LadderVAE:
     def _get_mean(self, args):
         mean1, log_sigma1, mean2, log_sigma2 = args
         return (mean1 * K.pow(K.exp(log_sigma1) + 1e-12, -2) +
-                mean2 * K.pow(K.exp(log_sigma2) + 1e-12, -2)) * self._get_log_sigma([log_sigma1, log_sigma2])
+                mean2 * K.pow(K.exp(log_sigma2) + 1e-12, -2)) * self._get_sigma([log_sigma1, log_sigma2])
 
-    def _get_log_sigma_gen(self, args):
+    def _get_sigma_gen(self, args):
         log_sigma1 = args
-        return K.pow(K.exp(log_sigma1) + 1e-12, -2)
+        return K.pow(K.exp(log_sigma1), 2)
 
     def _get_mean_gen(self, args):
         mean1, log_sigma1 = args
-        return mean1 * K.pow(K.exp(log_sigma1) + 1e-12, -2) * self._get_log_sigma_gen(log_sigma1)
+        return mean1 * K.pow(K.exp(log_sigma1) + 1e-12, -2) * self._get_sigma_gen(log_sigma1)
 
     def _sample(self, args):
-        z_mean, z_log_sigma = args
-        dist = tfd.Normal(loc=z_mean, scale=K.exp(z_log_sigma))
+        z_mean, z_sigma = args
+        dist = tfd.Normal(loc=z_mean, scale=z_sigma)
         return dist.sample()
 
     def _reparametrize(self, args):
@@ -99,7 +99,7 @@ class LadderVAE:
             self.latent_dim1)(d1), Dense(self.latent_dim1)(d1)
 
         # Combine mean and sigma
-        self.z1_log_sigma = Lambda(self._get_log_sigma)(
+        self.z1_sigma = Lambda(self._get_sigma)(
             [self.z1_log_sigma_BU, self.z1_log_sigma_TD])
 
         self.z1_mean = Lambda(self._get_mean)(
@@ -107,7 +107,7 @@ class LadderVAE:
 
         # Samlpe z1!
         self.z1 = Lambda(self._sample, name="sampling_z1")(
-            [self.z1_mean, self.z1_log_sigma])
+            [self.z1_mean, self.z1_sigma])
 
         reco = decoder1(self.z1)
 
@@ -123,7 +123,7 @@ class LadderVAE:
         gen_mean, gen_log_sigma = mean_log_var_model_for_top_down_calc(gen2)
 
         # Combine mean and sigma for generative model
-        gen_log_sigma = Lambda(self._get_log_sigma_gen)(
+        gen_sigma = Lambda(self._get_sigma_gen)(
             [gen_log_sigma])
 
         gen_mean = Lambda(self._get_mean_gen)(
@@ -131,7 +131,7 @@ class LadderVAE:
 
         # Samlping
         gen2 = Lambda(self._sample)(
-            [gen_mean, gen_log_sigma])
+            [gen_mean, gen_sigma])
 
         gen_reco = decoder1(gen2)
         generative_model = Model(latent_input, gen_reco)
@@ -157,9 +157,10 @@ class LadderVAE:
         p2 = tfd.Normal(self.z2_mean, tf.exp(self.z2_log_sigma))
         q2 = tfd.Normal(0, 1)
         kl2 = tf.reduce_mean(tfd.kl_divergence(p2, q2), axis=-1)
-        p1 = tfd.Normal(self.z1_mean, tf.exp(self.z1_log_sigma))
+        p1 = tfd.Normal(self.z1_mean, self.z1_sigma)
         q1 = tfd.Normal(self.z1_mean_TD, tf.exp(self.z1_log_sigma_TD))
-        kl1 = tf.reduce_mean(tfd.kl_divergence(p1, q1), axis=-1)
+        kl1 = tf.reduce_mean(tfd.kl_divergence(
+            p1, q1, allow_nan_stats=False), axis=-1)
         kl = kl2 + kl1
         return self.beta * kl
     """
