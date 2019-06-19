@@ -52,7 +52,7 @@ class LadderVAE:
 
     def _get_log_sigma_gen(self, args):
         log_sigma1 = args
-        return K.pow(K.exp(log_sigma1), 2)
+        return K.pow(K.exp(log_sigma1) + 1e-12, -2)
 
     def _get_mean_gen(self, args):
         mean1, log_sigma1 = args
@@ -154,13 +154,14 @@ class LadderVAE:
     """
 
     def _KL_divergence(self, y_true, y_pred):
-        return - self.beta * (
-            0.5 * K.mean(1 + self.z2_log_sigma - K.square(self.z2_mean)
-                         - K.exp(self.z2_log_sigma), axis=-1) +
-            K.mean(self.z1_log_sigma_TD - self.z1_log_sigma +
-                   (K.exp(self.z1_log_sigma)**2 +
-                    (self.z1_mean - self.z1_mean_TD)**2)
-                   / (2. * K.exp(self.z1_log_sigma_TD)**2 + 1e-12) - 0.5))
+        p2 = tfd.Normal(self.z2_mean, tf.exp(self.z2_log_sigma))
+        q2 = tfd.Normal(0, 1)
+        kl2 = tf.reduce_mean(tfd.kl_divergence(p2, q2), axis=-1)
+        p1 = tfd.Normal(self.z1_mean, tf.exp(self.z1_log_sigma))
+        q1 = tfd.Normal(self.z1_mean_TD, tf.exp(self.z1_log_sigma_TD))
+        kl1 = tf.reduce_mean(tfd.kl_divergence(p1, q1), axis=-1)
+        kl = kl2 + kl1
+        return self.beta * kl
     """
       For binarized input with KL term (!)
     """

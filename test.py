@@ -8,7 +8,7 @@ conv_vae = DenseLadderVAE(input_shape=(70, 28*28),
 
 model_trainer = ModelTrainer(
     conv_vae, data_gen, loss_fn="normal", beta=1, lr=5e-6)
-model_trainer.fit(5, 5)
+model_trainer.fit(10, 50)
 
 plotter = VAEPlotter(model_trainer, data_gen)
 plotter.grid_plot()
