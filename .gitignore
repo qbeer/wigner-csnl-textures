@@ -6,3 +6,4 @@ dist/
 csnl_vae_olaralex.egg-info/
 build/
 *.h5
+*.gif
