@@ -154,16 +154,16 @@ class LadderVAE:
     """
 
     def _KL_divergence2(self, y_true, y_pred):
-        p = tfd.Normal(self.z2_mean, tf.exp(self.z2_log_sigma))
+        p = tfd.Normal(self.z2_mean, tf.exp(self.z2_log_sigma) + 1e-12)
         q = tfd.Normal(0, 1)
         kl = tf.reduce_mean(tfd.kl_divergence(p, q), axis=-1)
         return self.beta * kl
 
     def _KL_divergence1(self, y_true, y_pred):
-        p = tfd.Normal(self.z1_mean, self.z1_sigma)
-        q = tfd.Normal(self.z1_mean_TD, tf.exp(self.z1_log_sigma_TD))
+        p = tfd.Normal(self.z1_mean, self.z1_sigma + 1e-12)
+        q = tfd.Normal(self.z1_mean_TD, tf.exp(self.z1_log_sigma_TD) + 1e-12)
         kl = tf.reduce_mean(tfd.kl_divergence(
-            p, q, allow_nan_stats=False), axis=-1)
+            p, q, allow_nan_stats=True), axis=-1)
         return self.beta * kl
 
     def _KL_divergence(self, y_true, y_pred):

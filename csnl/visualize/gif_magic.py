@@ -37,9 +37,6 @@ class GifCallBack(Callback):
             ax.set_xticks([])
             ax.set_yticks([])
 
-        fig.suptitle("Generated samples on %d - dimensional grid" %
-                     self.latent_dim)
-
         fig.savefig(os.getcwd() + "/tmp/" + str(epoch) + ".png", dpi=100)
         plt.close(fig)
 
