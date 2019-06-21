@@ -113,7 +113,8 @@ class LadderVAE:
 
         model = Model(input_img, reco)
         model.compile(optimizer=RMSprop(lr=lr, decay=decay),
-                      loss=self._get_loss(loss_fn), metrics=[self._KL_divergence1, self._KL_divergence2])
+                      loss=self._get_loss(loss_fn), metrics=[self._KL_divergence1,
+                                                             self._KL_divergence2])
 
         # Generative model
         latent_input = Input(shape=(self.latent_dim2,))
@@ -160,6 +161,7 @@ class LadderVAE:
         return self.beta * kl
 
     def _KL_divergence1(self, y_true, y_pred):
+        print("Beta : ", self.beta)
         p = tfd.Normal(self.z1_mean, self.z1_sigma + 1e-12)
         q = tfd.Normal(self.z1_mean_TD, tf.exp(self.z1_log_sigma_TD) + 1e-12)
         kl = tf.reduce_mean(tfd.kl_divergence(

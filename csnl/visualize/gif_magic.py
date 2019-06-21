@@ -33,7 +33,7 @@ class GifCallBack(Callback):
             self.grid_size, self.grid_size, sharex=True, sharey=True, figsize=(11, 11))
 
         for ind, ax in enumerate(axes.flatten()):
-            ax.imshow(recos[ind], interpolation='none', vmin=0, vmax=1)
+            ax.imshow(recos[ind], interpolation='none')
             ax.set_xticks([])
             ax.set_yticks([])
 

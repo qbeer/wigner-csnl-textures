@@ -54,21 +54,21 @@ class VAEPlotter:
         fig.suptitle("Train and test reconstructions\n\n")
         plt.show()
 
-    def generate_samples(self):
+    def generate_samples(self, vmax=1):
         latent_inputs = np.random.normal(size=(14*14, self._latent_dim))
 
-        self._plot_samples(latent_inputs)
+        self._plot_samples(latent_inputs, vmax)
 
-    def visualize_latent(self, axis=0, sweep_from=-1, sweep_to=1):
+    def visualize_latent(self, axis=0, sweep_from=-1, sweep_to=1, vmax=1):
         sweep = np.linspace(sweep_from, sweep_to, 14*14)
         latent_inputs = np.random.normal(size=(1, self._latent_dim))
         latent_inputs = np.array(latent_inputs.tolist() * (14*14))
         latent_inputs = latent_inputs.reshape(14*14, self._latent_dim)
         latent_inputs[:, axis] = sweep
 
-        self._plot_samples(latent_inputs)
+        self._plot_samples(latent_inputs, vmax)
 
-    def _plot_samples(self, latent_inputs):
+    def _plot_samples(self, latent_inputs, vmax):
         recos = self.generator_model.predict(
             latent_inputs[:14*14].reshape(14*14, self._latent_dim))
         # Output 196 images
@@ -82,7 +82,7 @@ class VAEPlotter:
             recos = recos.reshape(14*14, 28, 28)
 
         for ind, ax in enumerate(axes.flatten()):
-            ax.imshow(recos[ind], interpolation='none', vmin=0, vmax=1)
+            ax.imshow(recos[ind], interpolation='none', vmin=0, vmax=vmax)
             ax.set_xticks([])
             ax.set_yticks([])
 
