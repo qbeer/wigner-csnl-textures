@@ -111,10 +111,14 @@ class LadderVAE:
 
         reco = decoder1(self.z1)
 
+        losses = Losses(loss_fn, self.observation_noise, self.beta,
+                        z2_mean=self.z2_mean, z2_log_sigma=self.z2_log_sigma,
+                        z_mean=self.z1_mean, z_sigma=self.z1_sigma,
+                        z_mean_TD=self.z1_mean_TD, z_log_sigma_TD=self.z1_log_sigma_TD)
+
         model = Model(input_img, reco)
         model.compile(optimizer=RMSprop(lr=lr, decay=decay),
-                      loss=self._get_loss(loss_fn), metrics=[self._KL_divergence1,
-                                                             self._KL_divergence2])
+                      loss=losses.loss, metrics=[losses.KL_divergence])
 
         # Generative model
         latent_input = Input(shape=(self.latent_dim2,))
@@ -144,46 +148,3 @@ class LadderVAE:
         self.latent_dim = self.latent_dim2
 
         return model, generative_model, latent_model
-
-    def _get_loss(self, loss_fn):
-        losses = {"normal": self._normal,
-                  "bernoulli": self._bernoulli}
-        return losses[loss_fn]
-
-    """
-      Making it custom metric to be able to feed it to Keras API - actually no need for y_true, y_pred
-    """
-
-    def _KL_divergence2(self, y_true, y_pred):
-        p = tfd.Normal(self.z2_mean, tf.exp(self.z2_log_sigma) + 1e-12)
-        q = tfd.Normal(0, 1)
-        kl = tf.reduce_mean(tfd.kl_divergence(p, q), axis=-1)
-        return self.beta * kl
-
-    def _KL_divergence1(self, y_true, y_pred):
-        print("Beta : ", self.beta)
-        p = tfd.Normal(self.z1_mean, self.z1_sigma + 1e-12)
-        q = tfd.Normal(self.z1_mean_TD, tf.exp(self.z1_log_sigma_TD) + 1e-12)
-        kl = tf.reduce_mean(tfd.kl_divergence(
-            p, q, allow_nan_stats=True), axis=-1)
-        return self.beta * kl
-
-    def _KL_divergence(self, y_true, y_pred):
-        return self._KL_divergence1(None, None) + self._KL_divergence2(None, None)
-
-    """
-      For binarized input with KL term (!)
-    """
-
-    def _bernoulli(self, x_true, x_reco):
-        return -tf.reduce_mean(tfd.Bernoulli(x_reco)._log_prob(x_true)
-                               ) + self._KL_divergence(None, None)
-
-    """
-      For non binarized input with KL term(!)
-    """
-
-    def _normal(self, x_true, x_reco):
-        return -tf.reduce_mean(
-            tfd.Normal(x_reco, scale=self.observation_noise)._log_prob(x_true)
-        ) + self._KL_divergence(None, None)

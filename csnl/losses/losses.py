@@ -5,15 +5,24 @@ tfd = tfp.distributions
 
 
 class Losses:
-    def __init__(self, loss_fn, observation_noise, beta=0, z_mean=None, z_log_sigma=None):
+    def __init__(self, loss_fn, observation_noise, beta=0,
+                 z_mean=None, z_sigma=None, z2_mean=None, z2_log_sigma=None,
+                 z_mean_TD=None, z_log_sigma_TD=None):
         self.loss = self._get_loss(loss_fn)
         self.beta = beta
         self.observation_noise = observation_noise
-        self.z_mean = z_mean
-        self.z_log_sigma = z_log_sigma
+        self.z2_mean = z2_mean
+        self.z2_log_sigma = z2_log_sigma
         if self.beta > 0:
-            assert z_mean != None, "z_mean should be defined!"
-            assert z_log_sigma != None, "z_log_sigma should be defined"
+            assert z2_mean != None, "z_mean should be defined!"
+            assert z2_log_sigma != None, "z_log_sigma should be defined"
+        self.z_mean = z_mean
+        self.z_sigma = z_sigma
+        self.z_mean_TD = z_mean_TD
+        self.z_log_sigma_TD = z_log_sigma_TD
+        if self.z_mean != None and self.z_sigma != None:
+            assert z_mean_TD != None, "z_mean_TD should be defined!"
+            assert z_log_sigma_TD != None, "z_log_sigma_TD should be defined!"
 
     def _get_loss(self, loss_fn):
         losses = {"binary": self._binary,
@@ -28,8 +37,16 @@ class Losses:
 
     def KL_divergence(self, y_true, y_pred):
         if self.beta > 0:
-            return - self.beta * 0.5 * K.mean(
-                1 + self.z_log_sigma - K.square(self.z_mean) - K.exp(self.z_log_sigma), axis=-1)
+            p2 = tfd.Normal(self.z2_mean, tf.exp(self.z2_log_sigma) + 1e-12)
+            q2 = tfd.Normal(0, 1)
+            if self.z_mean != None and self.z_sigma != None:
+                p = tfd.Normal(self.z_mean, self.z_sigma)
+                q = tfd.Normal(self.z_mean_TD, tf.exp(
+                    self.z_log_sigma_TD) + 1e-12)
+                return self.beta * (tf.reduce_mean(tfd.kl_divergence(p, q)) + tf.reduce_mean(tfd.kl_divergence(p2, q2)))
+            else:
+                return self.beta * tf.reduce_mean(tfd.kl_divergence(p2, q2))
+
         return 0
     """
       For binarized input with KL term (!)
