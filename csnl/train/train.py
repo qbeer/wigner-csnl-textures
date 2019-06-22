@@ -22,6 +22,7 @@ class ModelTrainer:
         self.model.summary()
 
     def fit(self, EPOCHS, STEPS, contrast=False):
+        self.gifCallBack._make_on_train_start()
         try:
             self.history = self.model.fit_generator(
                 self.data_generator.flow() if not contrast else self.data_generator.contrast_flow(),
@@ -29,13 +30,15 @@ class ModelTrainer:
                 verbose=1, epochs=EPOCHS,
                 validation_data=self.data_generator.validation_data(), callbacks=[self.gifCallBack, self.betaCallback])
         except ValueError:
-            self.history = self.model.fit_generator(
-                self.data_generator.flattened_flow() if not contrast else self.data_generator.flattened_contrast_flow(), steps_per_epoch=STEPS,
-                verbose=1, epochs=EPOCHS,
-                validation_data=self.data_generator.flattened_validation_data(), callbacks=[self.gifCallBack, self.betaCallback])
+            try:
+                self.history = self.model.fit_generator(
+                    self.data_generator.flattened_flow() if not contrast else self.data_generator.flattened_contrast_flow(), steps_per_epoch=STEPS,
+                    verbose=1, epochs=EPOCHS,
+                    validation_data=self.data_generator.flattened_validation_data(), callbacks=[self.gifCallBack, self.betaCallback])
+            except ValueError:
+                self.gifCallBack._remove_on_error()
         finally:
             self._save_model()
-            self.gifCallBack._remove_on_error()
             plt.title("Model loss")
             plt.plot(self.history.history['loss'])
             plt.plot(self.history.history['val_loss'])

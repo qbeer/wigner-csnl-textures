@@ -13,7 +13,6 @@ class GifCallBack(Callback):
         self.latent_dim = latent_dim
         self.latent_inputs = np.random.normal(
             size=(grid_size*grid_size, latent_dim))
-        os.mkdir(os.getcwd() + '/tmp')
 
     def on_epoch_end(self, epoch, logs=None):
         self._make_gif(epoch)
@@ -52,7 +51,10 @@ class GifCallBack(Callback):
 
         return recos
 
+    def _make_on_train_start(self):
+        os.mkdir(os.getcwd() + '/tmp')
+
     def _remove_on_error(self):
         for filename in os.listdir(os.getcwd() + '/tmp'):
             os.remove(os.getcwd() + '/tmp/' + filename)
-        os.rmdir(os.getcwd() + '/tmp')        
+        os.rmdir(os.getcwd() + '/tmp')
