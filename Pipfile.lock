@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "77c658725e3cfc40ea350c3fde02fecf7e80a8b3d1e170f453033f6f119d3474"
+            "sha256": "937ffd4b247e171affde58c06a2ff6e4221e8000cff4adb1ccbf6522abb30fb6"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -50,12 +50,26 @@
             ],
             "version": "==3.0.4"
         },
+        "cloudpickle": {
+            "hashes": [
+                "sha256:603244e0f552b72a267d47a7d9b347b27a3430f58a0536037a290e7e0e212ecf",
+                "sha256:b8ba7e322f2394b9bbbdc1c976e6442c2c02acc784cb9e553cee9186166a6890"
+            ],
+            "version": "==1.2.1"
+        },
         "cycler": {
             "hashes": [
                 "sha256:1d8a5ae1ff6c5cf9b93e8811e581232ad8920aeec647c37316ceac982b08cb2d",
                 "sha256:cd7b2d1018258d7247a71425e9f26463dfb444d411c39569972f4ce586b0c9d8"
             ],
             "version": "==0.10.0"
+        },
+        "decorator": {
+            "hashes": [
+                "sha256:86156361c50488b84a3f148056ea716ca587df2f0de1d34750d35c21312725de",
+                "sha256:f069f3a01830ca754ba5258fde2278454a0b5b79e0d7f5c13b3b97e57d4acff6"
+            ],
+            "version": "==4.4.0"
         },
         "docutils": {
             "hashes": [
@@ -487,10 +501,10 @@
         },
         "tensorflow-probability": {
             "hashes": [
-                "sha256:375439872bbc87867f4cd8048c04454e85221390bd3a704cf688539b425e2aa9"
+                "sha256:d743282ac42bff38bf98882f4de3e30f915f38eb084c50fb72c36de967610b30"
             ],
             "index": "pypi",
-            "version": "==0.6.0"
+            "version": "==0.7.0"
         },
         "termcolor": {
             "hashes": [

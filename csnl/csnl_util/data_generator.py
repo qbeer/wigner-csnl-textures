@@ -10,6 +10,8 @@ class DataGenerator:
         self.BATCH_SIZE = batch_size
         self.DATA_GENERATOR = ImageDataGenerator()
         self.TRAIN, self.TEST = self.DATA_LOADER.train_test_split()
+        print("Train SHAPE : ", self.TRAIN.shape)
+        print("Test SHAPE : ", self.TEST.shape)
 
     def flow(self):
         return self.DATA_GENERATOR.flow(self.TRAIN, self.TRAIN, batch_size=self.BATCH_SIZE)

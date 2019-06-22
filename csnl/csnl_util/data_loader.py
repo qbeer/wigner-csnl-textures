@@ -1,5 +1,5 @@
 import pickle
-from sklearn import model_selection
+from sklearn.utils import shuffle
 import numpy as np
 import os
 from sklearn.preprocessing import StandardScaler
@@ -28,10 +28,11 @@ class DataLoader:
             channel = int(np.prod(X_train.shape) /
                           (X_train.shape[0] * 28 * 28))
 
-            X_train, _ = model_selection.train_test_split(
-                X_train.reshape(X_train.shape[0], 28, 28, channel), test_size=0, random_state=45)
-            X_test, _ = model_selection.train_test_split(
-                X_test.reshape(X_test.shape[0], 28, 28, channel), test_size=0, random_state=42)
+            # not possible to not split them
+            X_train = shuffle(X_train.reshape(X_train.shape[0], 28, 28, channel), random_state=42)
+            X_test = shuffle(X_test.reshape(X_test.shape[0], 28, 28, 1), random_state=137)
+
+            print("Shapes : ", X_train.shape, "\t", X_test.shape)
         except IndexError:
             X = self.data
             X = np.clip(X, 0, 1.0)
