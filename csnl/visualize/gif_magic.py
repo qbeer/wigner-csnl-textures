@@ -51,3 +51,8 @@ class GifCallBack(Callback):
             recos = recos.reshape(self.grid_size**2, 28, 28)
 
         return recos
+
+    def _remove_on_error(self):
+        for filename in os.listdir(os.getcwd() + '/tmp'):
+            os.remove(os.getcwd() + '/tmp/' + filename)
+        os.rmdir(os.getcwd() + '/tmp')        

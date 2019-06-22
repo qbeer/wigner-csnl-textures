@@ -1,5 +1,6 @@
 import pickle
 from sklearn.utils import shuffle
+from sklearn import model_selection
 import numpy as np
 import os
 from sklearn.preprocessing import StandardScaler

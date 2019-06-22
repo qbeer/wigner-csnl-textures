@@ -35,6 +35,7 @@ class ModelTrainer:
                 validation_data=self.data_generator.flattened_validation_data(), callbacks=[self.gifCallBack, self.betaCallback])
         finally:
             self._save_model()
+            self.gifCallBack._remove_on_error()
             plt.title("Model loss")
             plt.plot(self.history.history['loss'])
             plt.plot(self.history.history['val_loss'])
