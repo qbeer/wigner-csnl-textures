@@ -40,7 +40,7 @@ class Losses:
             p2 = tfd.Normal(self.z2_mean, tf.exp(self.z2_log_sigma) + 1e-12)
             q2 = tfd.Normal(0, 1)
             if self.z_mean != None and self.z_sigma != None:
-                p = tfd.Normal(self.z_mean, self.z_sigma)
+                p = tfd.Normal(self.z_mean, self.z_sigma + 1e-12)
                 q = tfd.Normal(self.z_mean_TD, tf.exp(
                     self.z_log_sigma_TD) + 1e-12)
                 return self.beta * (tf.reduce_mean(tfd.kl_divergence(p, q)) + tf.reduce_mean(tfd.kl_divergence(p2, q2)))
