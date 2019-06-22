@@ -10,9 +10,9 @@ distutils-pytest = "*"
 
 [packages]
 keras = "*"
-tensorflow = "*"
+tensorflow = {version=">=1.13.1,<1.14"}
 sklearn = "*"
-tensorflow-probability = "*"
+tensorflow-probability = {version=">=0.6.0,<0.7"}
 matplotlib = "*"
 setuptools = "*"
 wheel = "*"
