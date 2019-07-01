@@ -3,7 +3,7 @@ from csnl import SmallDenseLadderVAE_BN, SmallDenseLadderVAE,\
 import os
 
 data_gen = DataGenerator(image_shape=(28, 28, 1), batch_size=70,
-                         file_path=os.getcwd() + '/csnl/data/scramtex_700_28px.pkl')
+                         file_path=os.getcwd() + '/csnl/data/scramtex_700_28px.pkl', whiten=True)
 conv_vae = SmallDenseVAE(input_shape=(70, 28*28),
                          latent_dim=256)
 

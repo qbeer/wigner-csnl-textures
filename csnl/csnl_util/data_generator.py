@@ -4,8 +4,9 @@ from .data_loader import DataLoader
 
 
 class DataGenerator:
-    def __init__(self, image_shape, batch_size, file_path='/data/scramtex_700_28px.pkl', binarize=False):
-        self.DATA_LOADER = DataLoader(file_path, binarize)
+    def __init__(self, image_shape, batch_size,
+                 file_path='/data/scramtex_700_28px.pkl', binarize=False, whiten=False):
+        self.DATA_LOADER = DataLoader(file_path, binarize, whiten)
         self.IMAGE_SHAPE = image_shape
         self.BATCH_SIZE = batch_size
         self.DATA_GENERATOR = ImageDataGenerator()
