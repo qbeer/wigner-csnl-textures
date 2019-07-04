@@ -13,7 +13,7 @@ class SmallDenseVAE(VariationalAutoEncoder):
         x = ReLU()(x)
         x = Dense(105)(x)
         x = ReLU()(x)
-        encoder = Model(input_tensor, x)
+        encoder = Model(input_tensor, x, name="small_dense_encoder")
         return encoder
 
     def _decoder(self):
@@ -25,5 +25,5 @@ class SmallDenseVAE(VariationalAutoEncoder):
         x = Dense(800)(x)
         x = ReLU()(x)
         reco = Dense(self.input_shape[1])(x)
-        decoder = Model(latent, reco)
+        decoder = Model(latent, reco, name="small_dense_decoder")
         return decoder

@@ -37,7 +37,7 @@ class LadderVAE:
         inp = Input(shape=(self._mean_variance_input_shape,))
         mean, log_var = Dense(self.latent_dim1)(
             inp), Dense(self.latent_dim1)(inp)
-        model = Model(inp, [mean, log_var])
+        model = Model(inp, [mean, log_var], name="mean_log_variance_model")
         return model
 
     def _get_sigma(self, args):
@@ -84,9 +84,9 @@ class LadderVAE:
 
         # Reparametrization deepest layer
         self.z2_mean, self.z2_log_sigma = Dense(
-            self.latent_dim2)(d2), Dense(self.latent_dim2)(d2)
+            self.latent_dim2, name="mean_z2")(d2), Dense(self.latent_dim2, name="log_sigma_z2")(d2)
 
-        self.z2 = Lambda(self._reparametrize, name="latent")(
+        self.z2 = Lambda(self._reparametrize, name="sampling_z2")(
             [self.z2_mean, self.z2_log_sigma])
 
         # Top down and bottom up mean and variance calculation
@@ -96,13 +96,13 @@ class LadderVAE:
             self.z1_intermediate)
 
         self.z1_mean_BU, self.z1_log_sigma_BU = Dense(
-            self.latent_dim1)(d1), Dense(self.latent_dim1)(d1)
+            self.latent_dim1, name="bottom_up_mean")(d1), Dense(self.latent_dim1, name="bottom_up_log_sigma")(d1)
 
         # Combine mean and sigma
-        self.z1_sigma = Lambda(self._get_sigma)(
+        self.z1_sigma = Lambda(self._get_sigma, name="calculate_sigma_z1")(
             [self.z1_log_sigma_BU, self.z1_log_sigma_TD])
 
-        self.z1_mean = Lambda(self._get_mean)(
+        self.z1_mean = Lambda(self._get_mean, name="calculate_mean_z1")(
             [self.z1_mean_TD, self.z1_log_sigma_TD, self.z1_mean_BU, self.z1_log_sigma_BU])
 
         # Samlpe z1!

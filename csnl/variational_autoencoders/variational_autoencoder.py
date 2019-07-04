@@ -27,9 +27,9 @@ class VariationalAutoEncoder(Encoder):
         encoded = encoder(input_img)
 
         # Reparametrization
-        self.z_mean = Dense(self.latent_dim)(encoded)
-        self.z_log_sigma = Dense(self.latent_dim)(encoded)
-        z = Lambda(self._sampling, name="latent")(
+        self.z_mean = Dense(self.latent_dim, name="mean")(encoded)
+        self.z_log_sigma = Dense(self.latent_dim, name="log_sigma")(encoded)
+        z = Lambda(self._sampling, name="sampling_z")(
             [self.z_mean, self.z_log_sigma])
 
         reco = decoder(z)

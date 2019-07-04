@@ -18,7 +18,7 @@ class DenseEncoder(Encoder):
         x = ReLU()(x)
         x = Dense(256)(x)
         x = ReLU()(x)
-        encoder = Model(input_img, x)
+        encoder = Model(input_img, x, name="dense_encoder")
         return encoder
 
     def _decoder(self):
@@ -34,5 +34,5 @@ class DenseEncoder(Encoder):
         x = Dense(2048)(x)
         x = ReLU()(x)
         reco = Dense(self.input_shape[1])(x)
-        decoder = Model(latent_input, reco)
+        decoder = Model(latent_input, reco, name="dense_decoder")
         return decoder

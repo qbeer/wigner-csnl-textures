@@ -18,6 +18,8 @@ setuptools = "*"
 wheel = "*"
 twine = "*"
 imageio = "*"
+pydot = "*"
+graphviz = "*"
 
 [requires]
 python_version = "3.7"
