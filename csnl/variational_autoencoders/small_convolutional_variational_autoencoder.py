@@ -16,7 +16,8 @@ class SmallConvolutionalVAE(VariationalAutoEncoder):
         x = ReLU()(x)
         x = MaxPooling2D((2, 2), padding='same')(x)
         encoded = Flatten()(x)
-        encoder_model = Model(input_img, encoded)
+        encoder_model = Model(input_img, encoded,
+                              name="small_convolutional_encoder")
         return encoder_model
 
     def _decoder(self):
@@ -30,5 +31,5 @@ class SmallConvolutionalVAE(VariationalAutoEncoder):
         x = ReLU()(x)
         reco = Conv2DTranspose(
             self.input_shape[-1], (2, 2), strides=(2, 2), padding='same')(x)
-        decoder_model = Model(latent, reco)
+        decoder_model = Model(latent, reco, name="small_convolutional_decoder")
         return decoder_model

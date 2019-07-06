@@ -13,7 +13,7 @@ class DenseLadderVAE(LadderVAE):
         x = Dense(256)(x)
         x = ReLU()(x)
         x = Dense(self.latent_dim1)(x)
-        encoder = Model(input_tensor, x)
+        encoder = Model(input_tensor, x, name="dense_encoder_1")
         return encoder
 
     def encoder2(self):
@@ -24,7 +24,7 @@ class DenseLadderVAE(LadderVAE):
         x = ReLU()(x)
         x = Dense(256)(x)
         x = ReLU()(x)
-        encoder = Model(input_tensor, x)
+        encoder = Model(input_tensor, x, name="dense_encoder_2")
         return encoder
 
     def decoder2(self):
@@ -35,7 +35,7 @@ class DenseLadderVAE(LadderVAE):
         x = ReLU()(x)
         x = Dense(self._mean_variance_input_shape)(x)
         reco = ReLU()(x)
-        decoder = Model(latent2, reco)
+        decoder = Model(latent2, reco, name="dense_decoder_2")
         return decoder
 
     def decoder1(self):
@@ -47,5 +47,5 @@ class DenseLadderVAE(LadderVAE):
         x = Dense(2048)(x)
         x = ReLU()(x)
         reco = Dense(self.input_shape[1])(x)
-        decoder = Model(latent1, reco)
+        decoder = Model(latent1, reco, name="dense_decoder_1")
         return decoder

@@ -17,7 +17,7 @@ class ConvolutionalEncoder(Encoder):
         x = PReLU()(x)
         x = MaxPooling2D((2, 2), padding='same')(x)
         encoded = Flatten()(x)
-        encoder = Model(input_img, encoded)
+        encoder = Model(input_img, encoded, name="convolutional_encoder")
         return encoder
 
     def _decoder(self):
@@ -34,5 +34,5 @@ class ConvolutionalEncoder(Encoder):
         x = Conv2DTranspose(1024, (2, 2), strides=(2, 2), padding='same')(x)
         x = PReLU()(x)
         reco = Conv2DTranspose(self.input_shape[-1], (2, 2), strides=(2, 2))(x)
-        decoder = Model(latent, reco)
+        decoder = Model(latent, reco, name="convolutional_decoder")
         return decoder

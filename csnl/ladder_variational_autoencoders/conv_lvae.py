@@ -17,7 +17,7 @@ class ConvLadderVAE(LadderVAE):
         x = ReLU()(x)
         x = Flatten()(x)
         encoded = Dense(self.latent_dim1)(x)
-        encoder = Model(input_img, encoded)
+        encoder = Model(input_img, encoded, name="convolutional_encoder_1")
         return encoder
 
     def encoder2(self):
@@ -31,7 +31,7 @@ class ConvLadderVAE(LadderVAE):
         x = ReLU()(x)
         x = Flatten()(x)
         encoded = Dense(self.latent_dim2)(x)
-        encoder = Model(input_img, encoded)
+        encoder = Model(input_img, encoded, name="convolutional_encoder_2")
         return encoder
 
     def decoder2(self):
@@ -46,7 +46,7 @@ class ConvLadderVAE(LadderVAE):
         x = Flatten()(x)
         x = Dense(self._mean_variance_input_shape)(x)
         reco = ReLU()(x)
-        decoder = Model(latent2, reco)
+        decoder = Model(latent2, reco, name="convolutional_decoder_2")
         return decoder
 
     def decoder1(self):
@@ -64,5 +64,5 @@ class ConvLadderVAE(LadderVAE):
         x = Flatten()(x)
         x = Dense(np.prod(self.input_shape[1:]))(x)
         reco = Reshape(target_shape=self.input_shape[1:])(x)
-        decoder = Model(latent1, reco)
+        decoder = Model(latent1, reco, name="convolutional_decoder_1")
         return decoder

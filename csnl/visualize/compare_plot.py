@@ -4,11 +4,12 @@ import numpy as np
 
 
 class VAEPlotter:
-    def __init__(self, fitted_model, datagen):
+    def __init__(self, fitted_model, datagen, grid_size=14):
         self.model = fitted_model.model
         self.generator_model = fitted_model.generator
         self._latent_dim = fitted_model.latent_dim
         self.datagen = datagen
+        self.grid_size = grid_size
         self.train_images, _ = next(self.datagen.flow())
         self.test_images, _ = self.datagen.validation_data()
         self.batch_size = self.train_images.shape[0]
@@ -55,31 +56,31 @@ class VAEPlotter:
         plt.show()
 
     def generate_samples(self, vmax=1):
-        latent_inputs = np.random.normal(size=(14*14, self._latent_dim))
+        latent_inputs = np.random.normal(size=(self.grid_size*self.grid_size, self._latent_dim))
 
         self._plot_samples(latent_inputs, vmax)
 
     def visualize_latent(self, axis=0, sweep_from=-1, sweep_to=1, vmax=1):
-        sweep = np.linspace(sweep_from, sweep_to, 14*14)
+        sweep = np.linspace(sweep_from, sweep_to, self.grid_size*self.grid_size)
         latent_inputs = np.random.normal(size=(1, self._latent_dim))
-        latent_inputs = np.array(latent_inputs.tolist() * (14*14))
-        latent_inputs = latent_inputs.reshape(14*14, self._latent_dim)
+        latent_inputs = np.array(latent_inputs.tolist() * (self.grid_size*self.grid_size))
+        latent_inputs = latent_inputs.reshape(self.grid_size*self.grid_size, self._latent_dim)
         latent_inputs[:, axis] = sweep
 
         self._plot_samples(latent_inputs, vmax)
 
     def _plot_samples(self, latent_inputs, vmax):
         recos = self.generator_model.predict(
-            latent_inputs[:14*14].reshape(14*14, self._latent_dim))
+            latent_inputs[:self.grid_size*self.grid_size].reshape(self.grid_size*self.grid_size, self._latent_dim))
         # Output 196 images
         fig, axes = plt.subplots(
-            14, 14, sharex=True, sharey=True, figsize=(11, 11))
+            self.grid_size, self.grid_size, sharex=True, sharey=True, figsize=(11, 11))
 
         if np.prod(recos[0].shape) / (28*28) != 1:
             recos = recos.reshape(
-                14*14, 28, 28, int(np.prod(recos[0].shape) / (28*28)))
+                self.grid_size*self.grid_size, 28, 28, int(np.prod(recos[0].shape) / (28*28)))
         else:
-            recos = recos.reshape(14*14, 28, 28)
+            recos = recos.reshape(self.grid_size*self.grid_size, 28, 28)
 
         for ind, ax in enumerate(axes.flatten()):
             ax.imshow(recos[ind], interpolation='none', vmin=0, vmax=vmax)
