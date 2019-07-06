@@ -9,11 +9,12 @@ class IncrementalBeta(Callback):
         self.beta = 0
 
     def on_epoch_begin(self, epoch, logs=None):
-        K.set_value(self.model.beta, self.beta_max if self.beta > self.beta_max else self.beta)
+        K.set_value(self.model.beta, self.beta)
 
     def on_epoch_end(self, epoch, logs=None):
-        if self.beta < self.beta_max:
-            self.beta += self.beta_max / (self.n_epochs // 2)
-            print("BETA updated : ", self.beta)
+        updated_beta = self.beta + self.beta_max / (3 * self.n_epochs // 4)
+        if updated_beta < self.beta_max:
+            self.beta = updated_beta
+            print("Beta updated : ", self.beta)
         else:
             self.beta = self.beta_max

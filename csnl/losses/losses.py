@@ -49,7 +49,6 @@ class Losses:
                 p = tfd.Normal(self.z_mean, self.z_sigma + 1e-12)
                 q = tfd.Normal(self.z_mean_TD, tf.exp(
                     self.z_log_sigma_TD) + 1e-12)
-                print("BETA at loss : ", self.beta)
                 return self.beta * (tf.reduce_mean(tfd.kl_divergence(p, q)) + tf.reduce_mean(tfd.kl_divergence(p2, q2)))
             else:
                 return self.beta * tf.reduce_mean(tfd.kl_divergence(p2, q2))

@@ -67,4 +67,3 @@ class ModelTrainer:
         """
         self.latent_model.save(os.getcwd() + "/latent_model.h5")
         self.saved = True
-        print("OK!")
