@@ -13,9 +13,15 @@ class Losses:
         self.observation_noise = observation_noise
         self.z2_mean = z2_mean
         self.z2_log_sigma = z2_log_sigma
-        if self.beta > 0:
+
+        def f1():
             assert z2_mean != None, "z_mean should be defined!"
             assert z2_log_sigma != None, "z_log_sigma should be defined"
+            return 0
+
+        def f2():
+            return 0
+        tf.cond(self.beta > 0, f1, f2)
         self.z_mean = z_mean
         self.z_sigma = z_sigma
         self.z_mean_TD = z_mean_TD
@@ -36,18 +42,20 @@ class Losses:
     """
 
     def KL_divergence(self, y_true, y_pred):
-        if self.beta > 0:
+        def f1():
             p2 = tfd.Normal(self.z2_mean, tf.exp(self.z2_log_sigma) + 1e-12)
             q2 = tfd.Normal(0, 1)
             if self.z_mean != None and self.z_sigma != None:
                 p = tfd.Normal(self.z_mean, self.z_sigma + 1e-12)
                 q = tfd.Normal(self.z_mean_TD, tf.exp(
                     self.z_log_sigma_TD) + 1e-12)
+                print("BETA at loss : ", self.beta)
                 return self.beta * (tf.reduce_mean(tfd.kl_divergence(p, q)) + tf.reduce_mean(tfd.kl_divergence(p2, q2)))
             else:
                 return self.beta * tf.reduce_mean(tfd.kl_divergence(p2, q2))
 
-        return 0
+        def f2(): return 0.0
+        return tf.cond(self.beta > 0., f1, f2)
     """
       For binarized input with KL term (!)
     """
@@ -57,7 +65,7 @@ class Losses:
             labels=x_true, logits=x_reco) + self.KL_divergence(None, None)
 
     def _bernoulli(self, x_true, x_reco):
-        return -tf.reduce_mean(tfd.Bernoulli(x_reco)._log_prob(x_true)
+        return -tf.reduce_mean(tfd.Bernoulli(logits=x_reco)._log_prob(x_true)
                                ) + self.KL_divergence(None, None)
 
     """

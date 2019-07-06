@@ -111,12 +111,14 @@ class LadderVAE:
 
         reco = decoder1(self.z1)
 
-        losses = Losses(loss_fn, self.observation_noise, self.beta,
+        model = Model(input_img, reco)
+        model.beta = K.variable(self.beta)
+
+        losses = Losses(loss_fn, self.observation_noise, model.beta,
                         z2_mean=self.z2_mean, z2_log_sigma=self.z2_log_sigma,
                         z_mean=self.z1_mean, z_sigma=self.z1_sigma,
                         z_mean_TD=self.z1_mean_TD, z_log_sigma_TD=self.z1_log_sigma_TD)
 
-        model = Model(input_img, reco)
         model.compile(optimizer=RMSprop(lr=lr, decay=decay),
                       loss=losses.loss, metrics=[losses.KL_divergence])
 

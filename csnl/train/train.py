@@ -11,32 +11,31 @@ class ModelTrainer:
             "Loss function should be in [\'normal\', \'normalDiag\', \'bernoulli\', \'binary\']"
         args = loss_fn, lr, decay, observation_noise, beta
         self._model = model
+        self.beta = beta
         self.model, self.generator, self.latent_model = self._model.get_compiled_model(
             *args)
         self.latent_dim = model.latent_dim
         self.data_generator = data_generator
         self.saved = False
-        self.gifCallBack = GifCallBack(
-            self.data_generator, self.generator, self.latent_dim)
-        self.betaCallback = IncrementalBeta(beta)
         self.model.summary()
 
-    def fit(self, EPOCHS, STEPS, contrast=False):
-        self.gifCallBack._make_on_train_start()
+    def fit(self, EPOCHS, STEPS, contrast=False, warm_up=False, make_gif=False):
+        callbacks = self._get_callbacks(EPOCHS, warm_up, make_gif)
         try:
             self.history = self.model.fit_generator(
                 self.data_generator.flow() if not contrast else self.data_generator.contrast_flow(),
                 steps_per_epoch=STEPS,
                 verbose=1, epochs=EPOCHS,
-                validation_data=self.data_generator.validation_data(), callbacks=[self.gifCallBack, self.betaCallback])
+                validation_data=self.data_generator.validation_data(), callbacks=callbacks)
         except ValueError:
             try:
                 self.history = self.model.fit_generator(
                     self.data_generator.flattened_flow() if not contrast else self.data_generator.flattened_contrast_flow(), steps_per_epoch=STEPS,
                     verbose=1, epochs=EPOCHS,
-                    validation_data=self.data_generator.flattened_validation_data(), callbacks=[self.gifCallBack, self.betaCallback])
+                    validation_data=self.data_generator.flattened_validation_data(), callbacks=callbacks)
             except ValueError:
-                self.gifCallBack._remove_on_error()
+                if make_gif:
+                    self.gifCallBack._remove_on_error()
         finally:
             self._save_model()
             plt.title("Model loss")
@@ -46,6 +45,18 @@ class ModelTrainer:
             plt.xlabel('Epoch')
             plt.legend(['train', 'validation'], loc='upper right')
             plt.show()
+
+    def _get_callbacks(self, n_epochs, warm_up, make_gif):
+        callbacks = []
+        if make_gif:
+            self.gifCallBack = GifCallBack(
+                self.data_generator, self.generator, self.latent_dim)
+            self.gifCallBack._make_on_train_start()
+            callbacks.append(self.gifCallBack)
+        if warm_up:
+            self.incrementalBetaCallback = IncrementalBeta(self.beta, n_epochs)
+            callbacks.append(self.incrementalBetaCallback)
+        return callbacks
 
     def _save_model(self):
         print("Saving the trained inference, generator and latent models...\t", end='')

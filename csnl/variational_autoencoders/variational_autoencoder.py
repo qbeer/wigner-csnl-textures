@@ -42,10 +42,12 @@ class VariationalAutoEncoder(Encoder):
         # Model for later inference
         latent_model = Model(input_img, outputs=[reco, z])
 
-        losses = Losses(loss_fn, self.observation_noise, self.beta,
+        model = Model(input_img, reco)
+        model.beta = K.variable(self.beta)
+
+        losses = Losses(loss_fn, self.observation_noise, model.beta,
                         z2_mean=self.z_mean, z2_log_sigma=self.z_log_sigma)
 
-        model = Model(input_img, reco)
         model.compile(optimizer=RMSprop(lr=lr, decay=decay),
                       loss=losses.loss, metrics=[losses.KL_divergence])
 
