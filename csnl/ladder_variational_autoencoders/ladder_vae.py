@@ -144,8 +144,9 @@ class LadderVAE:
         generative_model = Model(latent_input, gen_reco)
 
         # Model for latent inference
+        z1 = self.z1
         z2 = self.z2
-        latent_model = Model(input_img, outputs=[reco, z2])
+        latent_model = Model(input_img, outputs=[reco, z1, z2])
 
         self.latent_dim = self.latent_dim2
 
