@@ -14,12 +14,53 @@ class DataLoader:
         with open(file_path, 'rb') as f:
             self.data = pickle.load(f)
 
+    def get_data_and_labels(self):
+        X_train = self.data['train_images']
+        X_test = self.data['test_images']
+        y_train = self.data['train_labels']
+        y_test = self.data['test_labels']
+
+        X_train = np.clip(X_train, 0, 1.0)
+        X_test = np.clip(X_test, 0, 1.0)
+
+        print('Training size : %d \t Test size : %d' %
+              (X_train.shape[0], X_test.shape[0]))
+
+        channel = int(np.prod(X_train.shape) / (X_train.shape[0] * 28 * 28))
+
+        # not possible to not split them
+        X_train = shuffle(X_train.reshape(X_train.shape[0], 28, 28, channel),
+                          random_state=42)
+        y_train = shuffle(y_train, random_state=42)
+        X_test = shuffle(X_test.reshape(X_test.shape[0], 28, 28, 1),
+                         random_state=137)
+        y_test = shuffle(y_test, random_state=42)
+
+        if self.binarize:
+            X_train[X_train >= .5] = 1.
+            X_train[X_train < .5] = 0.
+            X_test[X_test >= .5] = 1.
+            X_test[X_test < .5] = 0.
+        if self.zca_whiten:
+            # add +1 and divide by 2 to shift
+            # them back to the interval [-1, 1]
+            X_train = self._whiten(X_train)
+            X_test = self._whiten(X_test)
+
+        print("Shapes : ", X_train.shape, "\t", X_test.shape)
+        print("Label shaped : ", y_train.shape, "\t", y_test.shape)
+
+        mean, std = np.mean(X_train), np.std(X_train)
+        print("Train set : ")
+        print('Mean: %.3f, Standard Deviation: %.3f' % (mean, std))
+        print('Min: %.3f, Max: %.3f' % (np.min(X_train), np.max(X_train)))
+
+        return (X_train, y_train, X_test, y_test)
+
     def train_test_split(self):
         try:
             X_train = self.data['train_images']
             X_test = self.data['test_images']
-            y_train = self.data['train_labels']
-            y_test = self.data['test_labels']
 
             X_train = np.clip(X_train, 0, 1.0)
             X_test = np.clip(X_test, 0, 1.0)
@@ -34,13 +75,10 @@ class DataLoader:
             X_train = shuffle(X_train.reshape(X_train.shape[0], 28, 28,
                                               channel),
                               random_state=42)
-            y_train = shuffle(y_train, random_state=42)
             X_test = shuffle(X_test.reshape(X_test.shape[0], 28, 28, 1),
                              random_state=137)
-            y_test = shuffle(y_test, random_state=42)
 
             print("Shapes : ", X_train.shape, "\t", X_test.shape)
-            print("Label shaped : ", y_train.shape, "\t", y_test.shape)
         except IndexError:
             X = self.data
             X = np.clip(X, 0, 1.0)
