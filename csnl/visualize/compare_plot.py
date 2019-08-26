@@ -116,11 +116,8 @@ class VAEPlotter:
         plt.show()
 
     def plot_label_correlations(self):
-        self.label_datagen.reset()
-        self.datagen.reset()
-
         images, labels = next(self.label_datagen.flow())
-        recos, z1, z2 = self.model(images, batch_size=self.batch_size)
+        recos, z1, z2 = self.model.predict(images, batch_size=self.batch_size)
 
         if np.prod(images[0].shape) / (28 * 28) != 1:
             images = images.reshape(self.batch_size, 28, 28,
