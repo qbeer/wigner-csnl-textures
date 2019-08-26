@@ -9,6 +9,7 @@ class VAEPlotter:
     def __init__(self, fitted_model, datagen, label_datagen, grid_size=14):
         self.model = fitted_model.model
         self.generator_model = fitted_model.generator
+        self.latent_model = fitted_model.latent_model
         self._latent_dim = fitted_model.latent_dim
         self.datagen = datagen
         self.label_datagen = label_datagen
@@ -118,9 +119,12 @@ class VAEPlotter:
     def plot_label_correlations(self):
         images, labels = next(self.label_datagen.flow())
         try:
-            recos, z1, z2 = self.model.predict(images, batch_size=self.batch_size)
+            recos, z1, z2 = self.latent_model.predict(
+                images, batch_size=self.batch_size)
         except ValueError:
-            recos, z1, z2 = self.model.predict(images.reshape(self.batch_size, -1), batch_size=self.batch_size)
+            recos, z1, z2 = self.latent_model.predict(
+                images.reshape(self.batch_size, 28 * 28),
+                batch_size=self.batch_size)
 
         if np.prod(images[0].shape) / (28 * 28) != 1:
             images = images.reshape(self.batch_size, 28, 28,
@@ -134,7 +138,7 @@ class VAEPlotter:
             fig = plt.figure(figsize=(10, 8))
             correlations = []
 
-            for i in range(self.latent_dim):
+            for i in range(self._latent_dim):
                 correlations.append(pearsonr(z2[:, i], labels[:, cat]))
 
             correlations = np.array(correlations)
@@ -155,3 +159,78 @@ class VAEPlotter:
             plt.ylabel('Pearson-correlation')
             plt.savefig('cat-%d-to-z2-corr.png' % (cat + 1), dpi=150)
             plt.show()
+
+    def plot_contrast_correlations(self, latent_dim2=None):
+        def contrast_flow(_flow):
+            def train_generator(_it):
+                while True:
+                    batch_x, batch_y = next(_it)
+                    yield _contrast(batch_x)
+
+            return train_generator(_flow)
+
+        random_contrasts = []
+
+        def _contrast(images):
+            contrasted_images = np.zeros(shape=images.shape)
+            for ind in range(images.shape[0]):
+                contrast = np.random.rand() * 2.
+                random_contrasts.append(contrast)
+                contrasted_images[ind] = np.clip(
+                    contrast * (images[ind] - 0.5) + 0.5, 0, 1)
+            return contrasted_images.reshape(self.batch_size,
+                                             784), contrasted_images.reshape(
+                                                 self.batch_size, 784)
+
+        reco, z1, z2 = self.latent_model.predict_generator(contrast_flow(
+            self.datagen.flow()),
+                                                           steps=50,
+                                                           verbose=1)
+
+        random_contrasts = np.array(random_contrasts).flatten()[:reco.shape[0]]
+        reco = reco.reshape(reco.shape[0], 28, 28)
+
+        self._latent_correlation(z2, random_contrasts, "z2")
+        self._stats(z2, self._latent_dim, "z2")
+        if latent_dim2 != None:
+            self._latent_correlation(z1, random_contrasts, "z1", latent_dim2)
+            self._stats(z1, latent_dim2, "z1")
+
+    def _latent_correlation(self, z, random_contrasts, latent_name,
+                            latent_dim):
+        fig = plt.figure(figsize=(10, 8))
+
+        correlations = []
+
+        for i in range(self._latent_dim):
+            correlations.append(pearsonr(z[:, i], random_contrasts))
+
+        correlations = np.array(correlations)
+
+        latent_dim = self._latent_dim if latent_dim == None else latent_dim
+
+        plt.title("Contrast correlation with %s" % latent_name)
+        plt.scatter(
+            range(correlations.shape[0]),
+            correlations[:, 0],
+            c=['b' if x >= 0.4 else 'r' for x in np.abs(correlations[:, 0])])
+        plt.hlines(y=.4, xmin=0, xmax=latent_dim)
+        plt.hlines(y=-.4, xmin=0, xmax=latent_dim)
+        plt.xlim(0, latent_dim)
+        plt.xticks(np.arange(1, latent_dim, 2))
+        plt.xlabel('Latent parameters')
+        plt.ylabel('Pearson-correlation')
+        plt.savefig('contrast-to-%s-corr.png' % latent_name, dpi=150)
+        plt.show()
+
+    def _stats(self, z, latent_dim, name):
+        fig = plt.figure(figsize=(20, 10))
+        plt.errorbar(x=range(latent_dim),
+                     y=np.mean(z, axis=0),
+                     yerr=np.std(z, axis=0),
+                     ecolor='r',
+                     fmt='o')
+        plt.xticks(np.linspace(0, latent_dim, 17))
+        plt.title('Mean and standard deviation of %s' % name)
+        plt.savefig('mean-and-std-of-%s.png' % name, dpi=150)
+        plt.show()
