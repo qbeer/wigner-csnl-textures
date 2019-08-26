@@ -20,6 +20,7 @@ twine = "*"
 imageio = "*"
 pydot = "*"
 graphviz = "*"
+scipy = "*"
 
 [requires]
 python_version = "3.6"
