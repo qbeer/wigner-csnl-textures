@@ -1,3 +1,4 @@
+import os
 from csnl import DataGeneratorWithLabels
 
 data_gen = DataGeneratorWithLabels(image_shape=(28, 28, 1),
