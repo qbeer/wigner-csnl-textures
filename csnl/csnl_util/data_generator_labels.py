@@ -17,7 +17,6 @@ class DataGeneratorWithLabels:
         self.TRAIN, self.TRAIN_LABEL, _, _ = self.DATA_LOADER.get_data_and_labels(
         )
         print("Train SHAPE : ", self.TRAIN.shape)
-        print("Test SHAPE : ", self.TEST.shape)
 
     def flow(self):
         return self.DATA_GENERATOR.flow(self.TRAIN,
