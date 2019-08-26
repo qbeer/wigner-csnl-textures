@@ -197,17 +197,17 @@ class VAEPlotter:
             self._stats(z1, latent_dim2, "z1")
 
     def _latent_correlation(self, z, random_contrasts, latent_name,
-                            latent_dim):
+                            latent_dim=None):
         fig = plt.figure(figsize=(10, 8))
 
         correlations = []
 
-        for i in range(self._latent_dim):
+        latent_dim = self._latent_dim if latent_dim == None else latent_dim
+
+        for i in range(latent_dim):
             correlations.append(pearsonr(z[:, i], random_contrasts))
 
         correlations = np.array(correlations)
-
-        latent_dim = self._latent_dim if latent_dim == None else latent_dim
 
         plt.title("Contrast correlation with %s" % latent_name)
         plt.scatter(
@@ -225,6 +225,11 @@ class VAEPlotter:
 
     def _stats(self, z, latent_dim, name):
         fig = plt.figure(figsize=(20, 10))
+
+        print(len(range(latent_dim)))
+        print(np.mean(z, axis=0).shape)
+        print(np.std(z, axis=0).shape)
+
         plt.errorbar(x=range(latent_dim),
                      y=np.mean(z, axis=0),
                      yerr=np.std(z, axis=0),
