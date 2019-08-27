@@ -2,22 +2,16 @@ import os
 from csnl import DataGeneratorWithLabels, DataGenerator, \
     DenseLadderVAE, VAEPlotter, ModelTrainer
 
-import tensorflow as tf
-import tensorflow_probability as tfp
-import keras as K
-
-print(tf.__version__, tfp.__version__, K.__version__)
-
 data_gen_labels = DataGeneratorWithLabels(image_shape=(28, 28, 1),
                                           batch_size=70,
                                           file_path=os.getcwd() +
-                                          '/csnl/data/scramtex_700_28px.pkl',
+                                          '/csnl/data/textures_42000_28px.pkl',
                                           whiten=False)
 
 data_gen = DataGenerator(image_shape=(28, 28, 1),
                          batch_size=70,
                          file_path=os.getcwd() +
-                         '/csnl/data/scramtex_700_28px.pkl',
+                         '/csnl/data/textures_42000_28px.pkl',
                          whiten=False)
 
 LATENT_DIM1 = 16 * 4

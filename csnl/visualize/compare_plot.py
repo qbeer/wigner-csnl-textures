@@ -226,10 +226,6 @@ class VAEPlotter:
     def _stats(self, z, latent_dim, name):
         fig = plt.figure(figsize=(20, 10))
 
-        print(len(range(latent_dim)))
-        print(np.mean(z, axis=0).shape)
-        print(np.std(z, axis=0).shape)
-
         plt.errorbar(x=range(latent_dim),
                      y=np.mean(z, axis=0),
                      yerr=np.std(z, axis=0),

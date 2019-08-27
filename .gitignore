@@ -1,6 +1,9 @@
 csnl/data/natural_*
 csnl/data/textures*
 csnl/data/whitened_*
+csnl/data/cifar10.pkl
+csnl/data/*nist.pkl
+csnl/data/dsprites.pkl
 .vscode/
 dist/
 csnl_vae_olaralex.egg-info/
