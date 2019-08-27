@@ -28,9 +28,9 @@ trainer = ModelTrainer(vae,
                        decay=1e-4,
                        beta=1)
 
-trainer.fit(10, 2000, contrast=True, warm_up=True, make_gif=True)
+trainer.fit(100, 2000, contrast=True, warm_up=True, make_gif=True)
 
-plotter = VAEPlotter(trainer, data_gen, data_gen_labels, grid_size=7)
+plotter = VAEPlotter(trainer, data_gen, data_gen_labels, grid_size=8)
 plotter.plot_contrast_correlations()
 plotter.plot_label_correlations()
 plotter.grid_plot()
