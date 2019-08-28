@@ -11,4 +11,5 @@ build/
 *.h5
 *.gif
 tmp/
-log.txt
+test_runs/*/*.h5
+test_runs/*/*.gif
