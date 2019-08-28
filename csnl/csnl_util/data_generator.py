@@ -4,9 +4,14 @@ from .data_loader import DataLoader
 
 
 class DataGenerator:
-    def __init__(self, image_shape, batch_size,
-                 file_path='/data/scramtex_700_28px.pkl', binarize=False, whiten=False):
-        self.DATA_LOADER = DataLoader(file_path, binarize, whiten)
+    def __init__(self,
+                 image_shape,
+                 batch_size,
+                 file_path='/data/scramtex_700_28px.pkl',
+                 binarize=False,
+                 whiten=False,
+                 contrast_normalize=False):
+        self.DATA_LOADER = DataLoader(file_path, binarize, whiten, contrast_normalize)
         self.IMAGE_SHAPE = image_shape
         self.BATCH_SIZE = batch_size
         self.DATA_GENERATOR = ImageDataGenerator()
@@ -15,13 +20,16 @@ class DataGenerator:
         print("Test SHAPE : ", self.TEST.shape)
 
     def flow(self):
-        return self.DATA_GENERATOR.flow(self.TRAIN, self.TRAIN, batch_size=self.BATCH_SIZE)
+        return self.DATA_GENERATOR.flow(self.TRAIN,
+                                        self.TRAIN,
+                                        batch_size=self.BATCH_SIZE)
 
     def contrast_flow(self):
         def train_generator(_it):
             while True:
                 batch_x, batch_y = next(_it)
                 yield self._contrast(batch_x, batch_y)
+
         return train_generator(self.flow())
 
     def flattened_flow(self):
@@ -30,7 +38,10 @@ class DataGenerator:
         def train_generator(_it):
             while True:
                 batch_x, batch_y = next(_it)
-                yield batch_x.reshape(self.BATCH_SIZE, image_dim), batch_y.reshape(self.BATCH_SIZE, image_dim)
+                yield batch_x.reshape(self.BATCH_SIZE,
+                                      image_dim), batch_y.reshape(
+                                          self.BATCH_SIZE, image_dim)
+
         return train_generator(self.flow())
 
     def flattened_contrast_flow(self):
@@ -39,9 +50,10 @@ class DataGenerator:
         def train_generator(_it):
             while True:
                 batch_x, batch_y = next(_it)
-                batch_x, batch_y = self._contrast(
-                    batch_x, batch_y)
-                yield batch_x.reshape(self.BATCH_SIZE, image_dim), batch_y.reshape(self.BATCH_SIZE, image_dim)
+                batch_x, batch_y = self._contrast(batch_x, batch_y)
+                yield batch_x.reshape(self.BATCH_SIZE,
+                                      image_dim), batch_y.reshape(
+                                          self.BATCH_SIZE, image_dim)
 
         return train_generator(self.flow())
 

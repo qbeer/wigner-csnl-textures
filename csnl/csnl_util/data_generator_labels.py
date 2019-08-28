@@ -9,8 +9,9 @@ class DataGeneratorWithLabels:
                  batch_size,
                  file_path='/data/scramtex_700_28px.pkl',
                  binarize=False,
-                 whiten=False):
-        self.DATA_LOADER = DataLoader(file_path, binarize, whiten)
+                 whiten=False,
+                 contrast_norm=False):
+        self.DATA_LOADER = DataLoader(file_path, binarize, whiten, contrast_norm)
         self.IMAGE_SHAPE = image_shape
         self.BATCH_SIZE = batch_size
         self.DATA_GENERATOR = ImageDataGenerator()

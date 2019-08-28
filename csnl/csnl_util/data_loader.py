@@ -8,9 +8,14 @@ from scipy.linalg import svd
 
 
 class DataLoader:
-    def __init__(self, file_path, binarize, zca_whiten=False):
+    def __init__(self,
+                 file_path,
+                 binarize,
+                 zca_whiten=False,
+                 contrast_normalize=False):
         self.binarize = binarize
         self.zca_whiten = zca_whiten
+        self.contrast_normalize = contrast_normalize
         with open(file_path, 'rb') as f:
             self.data = pickle.load(f)
 
@@ -46,6 +51,11 @@ class DataLoader:
             # them back to the interval [-1, 1]
             X_train = self._whiten(X_train)
             X_test = self._whiten(X_test)
+        if self.contrast_normalize:
+            X_train = np.array(
+                [self._contrast_normalization(x) for x in X_train])
+            X_test = np.array(
+                [self._contrast_normalization(x) for x in X_test])
 
         print("Shapes : ", X_train.shape, "\t", X_test.shape)
         print("Label shaped : ", y_train.shape, "\t", y_test.shape)
@@ -100,6 +110,11 @@ class DataLoader:
                 # them back to the interval [-1, 1]
                 X_train = self._whiten(X_train)
                 X_test = self._whiten(X_test)
+            if self.contrast_normalize:
+                X_train = np.array(
+                    [self._contrast_normalization(x) for x in X_train])
+                X_test = np.array(
+                    [self._contrast_normalization(x) for x in X_test])
 
             mean, std = np.mean(X_train), np.std(X_train)
             print("Train set : ")
@@ -119,3 +134,10 @@ class DataLoader:
         whitex = np.dot(flatx, principal_components)
         x = np.reshape(whitex, x.shape)
         return x
+
+    def _contrast_normalization(self, x, s=1, lmbd=10, epsilon=1e-3):
+        x_average = np.mean(x)
+        x_updated = x - x_average
+        contrast = np.sqrt(lmbd + np.mean(x_updated**2))
+        x_updated = s * x_updated / np.max(contrast, epsilon)
+        return x_updated
