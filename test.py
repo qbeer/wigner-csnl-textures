@@ -1,10 +1,6 @@
 import os
 from csnl import DataGeneratorWithLabels, DataGenerator, \
-<<<<<<< HEAD
     SmallDenseLadderVAE, VAEPlotter, ModelTrainer
-=======
-    SmallDenseLinearLadderVAE, VAEPlotter, ModelTrainer
->>>>>>> a26c7fd8881dc340ef8c4cfc4567e455fc6ccb7e
 
 data_gen_labels = DataGeneratorWithLabels(image_shape=(28, 28, 1),
                                           batch_size=100,
