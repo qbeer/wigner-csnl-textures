@@ -1,6 +1,6 @@
 import os
 from csnl import DataGeneratorWithLabels, DataGenerator, \
-    SmallDenseLadderVAE, VAEPlotter, ModelTrainer
+    SmallDenseLinearLadderVAE, VAEPlotter, ModelTrainer
 
 data_gen_labels = DataGeneratorWithLabels(image_shape=(28, 28, 1),
                                           batch_size=100,
@@ -17,7 +17,7 @@ data_gen = DataGenerator(image_shape=(28, 28, 1),
 LATENT_DIM1 = 16 * 8
 LATENT_DIM2 = 16 * 2
 
-vae = SmallDenseLadderVAE(input_shape=(100, 28 * 28),
+vae = SmallDenseLinearLadderVAE(input_shape=(100, 28 * 28),
                      latent_dim1=LATENT_DIM1,
                      latent_dim2=LATENT_DIM2)
 
