@@ -52,10 +52,14 @@ class DataLoader:
             X_train = self._whiten(X_train)
             X_test = self._whiten(X_test)
         if self.contrast_normalize:
-            X_train = np.array(
-                [self._contrast_normalization(x) for x in X_train])
-            X_test = np.array(
-                [self._contrast_normalization(x) for x in X_test])
+            X_train = np.array([
+                self._contrast_normalization_train(x, y_train[ind])
+                for ind, x in enumerate(X_train)
+            ])
+            X_test = np.array([
+                self._contrast_normalization_test(x, y_test[ind])
+                for ind, x in enumerate(X_test)
+            ])
 
         print("Shapes : ", X_train.shape, "\t", X_test.shape)
         print("Label shaped : ", y_train.shape, "\t", y_test.shape)
@@ -65,10 +69,20 @@ class DataLoader:
         print('Mean: %.3f, Standard Deviation: %.3f' % (mean, std))
         print('Min: %.3f, Max: %.3f' % (np.min(X_train), np.max(X_train)))
 
+        mean, std = np.mean(X_test), np.std(X_test)
+        print("Test set : ")
+        print('Mean: %.3f, Standard Deviation: %.3f' % (mean, std))
+        print('Min: %.3f, Max: %.3f' % (np.min(X_test), np.max(X_test)))
+
         return (X_train, y_train, X_test, y_test)
 
     def train_test_split(self):
         try:
+            X_train, y_train, X_test, y_test = self.get_data_and_labels()
+            print('returning here')
+            return (X_train, X_test)
+        except KeyError:
+            print('not getting here')
             X_train = self.data['train_images']
             X_test = self.data['test_images']
 
@@ -110,11 +124,6 @@ class DataLoader:
                 # them back to the interval [-1, 1]
                 X_train = self._whiten(X_train)
                 X_test = self._whiten(X_test)
-            if self.contrast_normalize:
-                X_train = np.array(
-                    [self._contrast_normalization(x) for x in X_train])
-                X_test = np.array(
-                    [self._contrast_normalization(x) for x in X_test])
 
             mean, std = np.mean(X_train), np.std(X_train)
             print("Train set : ")
@@ -135,9 +144,74 @@ class DataLoader:
         x = np.reshape(whitex, x.shape)
         return x
 
-    def _contrast_normalization(self, x, s=1, lmbd=10, epsilon=1e-3):
-        x_average = np.mean(x)
-        x_updated = x - x_average
-        contrast = np.sqrt(lmbd + np.mean(x_updated**2))
-        x_updated = s * x_updated / np.max(contrast, epsilon)
+    def _contrast_normalization_train(self,
+                                      x,
+                                      label,
+                                      s=3.33,
+                                      lmbd=10,
+                                      epsilon=1e-2):
+        means = {
+            0: 0.49618801083712977,
+            1: 0.5000000000000002,
+            2: 0.5000043854028291,
+            3: 0.49999037217872805,
+            4: 0.4999999999999999,
+            5: 0.49999999999999944,
+            6: 0.5000000000000006
+        }
+        stds = {
+            0: 0.2795232304659204,
+            1: 0.12972179491334127,
+            2: 0.1878776468561605,
+            3: 0.1455744995271547,
+            4: 0.042093943681260626,
+            5: 0.08038296207324777,
+            6: 0.11335077635372165
+        }
+        x_label = means[label]
+        x_updated = x - x_label
+        x_updated /= stds[label]
+        x_updated += 0.5  # set new mean
+        mini, maxi = -4.753, 7.455  # from train min and max values
+        diff = maxi - mini
+        x_updated -= mini
+        x_updated /= diff
+        x_updated = np.clip(x_updated, 0, 1)
+        return x_updated
+
+    def _contrast_normalization_test(self,
+                                     x,
+                                     label,
+                                     s=3.33,
+                                     lmbd=10,
+                                     epsilon=1e-2):
+        means = {
+            0: 0.49938174332232904,
+            1: 0.4994474854248672,
+            2: 0.49953722540249085,
+            3: 0.4993921865195907,
+            4: 0.4994409264556163,
+            5: 0.49944513245349165,
+            6: 0.4995206918013805
+        }
+        stds = {
+            0: 0.16108819138477978,
+            1: 0.15795423837534453,
+            2: 0.1530487919614309,
+            3: 0.1603416970580439,
+            4: 0.15674000765449378,
+            5: 0.15705830699788273,
+            6: 0.15216802897686568
+        }
+        x_label = means[label]
+        x_updated = x - x_label
+        x_updated /= stds[label]
+        x_updated += 0.5  # set new mean
+        mini, maxi = -2.783, 3.789  # from train mean and max values
+        diff = maxi - mini
+        x_updated -= mini
+        x_updated /= diff
+        x_updated *= (0.081913499344692 / 0.15216068167985394)
+        x_updated += (0.4302916120576671 - 0.26892201834862384)
+        x_updated = np.clip(x_updated, 0, 1)
         return x_updated
