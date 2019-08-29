@@ -168,6 +168,13 @@ class VAEPlotter:
                     yield _contrast(batch_x)
 
             return train_generator(_flow)
+        
+        def conv_contrast_flow(_flow):
+            def train_generator(_it):
+                while True:
+                    batch_x, batch_y = next(_it)
+                    batch_x, batch_y = _contrast(batch_x)
+                    yield batch_x.reshape(self.batch_size, 28, 28, 1), batch_y.reshape(self.batch_size, 28, 28, 1)
 
         random_contrasts = []
 
@@ -178,11 +185,15 @@ class VAEPlotter:
                 random_contrasts.append(contrast)
                 contrasted_images[ind] = np.clip(
                     contrast * (images[ind] - 0.5) + 0.5, 0, 1)
-            return contrasted_images.reshape(self.batch_size,
-                                             784), contrasted_images.reshape(
-                                                 self.batch_size, 784)
+            return contrasted_images.reshape(self.batch_size, 784), contrasted_images.reshape(self.batch_size, 784)
 
-        reco, z1, z2 = self.latent_model.predict_generator(contrast_flow(
+        try:
+            reco, z1, z2 = self.latent_model.predict_generator(contrast_flow(
+            self.datagen.flow()),
+                                                           steps=50,
+                                                           verbose=1)
+        except ValueError:
+            reco, z1, z2 = self.latent_model.predict_generator(conv_contrast_flow(
             self.datagen.flow()),
                                                            steps=50,
                                                            verbose=1)
