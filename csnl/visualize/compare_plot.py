@@ -115,14 +115,42 @@ class VAEPlotter:
                      self._latent_dim)
         plt.savefig("generated_samples.png", dpi=200)
         plt.show()
+    
+    def plot_td_bu_values(self, latent_dim1):
+        images, labels = next(self.label_datagen.flow())
+        try:
+            recos, z1, z2, z_mean_BU, z_log_var_BU, z_mean_TD, z_log_var_TD = self.latent_model.predict(
+                images, batch_size=self.batch_size)
+        except ValueError:
+            recos, z1, z2, z_mean_BU, z_log_var_BU, z_mean_TD, z_log_var_TD = self.latent_model.predict(
+                images.reshape(self.batch_size, 28 * 28),
+                batch_size=self.batch_size)
+        
+        mean_and_vars = [[z_mean_BU, z_log_var_BU], [z_mean_TD, z_log_var_TD]]
+        names = ['Bottom up values', 'Top down values']
+        fig, axes = plt.subplots(2, 2, sharex=False, sharey=False, figsize=(7, 9))
+        for ind in range(0, 2):
+            mean, var = mean_and_vars[ind // 2]
+            axes[ind, 0].hist(np.mean(z1, axis=0),  bins=100, alpha=0.2, label="z1")
+            axes[ind, 1].hist(np.std(z1, axis=0), bins=100, alpha=0.2, label="z1")
+            axes[ind, 0].hist(np.mean(mean, axis=0),  bins=100, alpha=0.2, label="other")
+            axes[ind, 1].hist(np.exp(np.mean(var, axis=0)), bins=100, alpha=0.2, label="other")
+            axes[ind, 0].set_title(names[ind] + " - mean")
+            axes[ind, 0].set_xlim(-2, 2)
+            axes[ind, 1].set_title(names[ind] + " - sigma")
+            axes[ind, 0].legend(loc='upper right')
+            axes[ind, 1].legend(loc='upper right')
+        fig.tight_layout()
+        plt.savefig("TD_BU_COMPS.png", dpi=200)
+        plt.show()
 
     def plot_label_correlations(self):
         images, labels = next(self.label_datagen.flow())
         try:
-            recos, z1, z2 = self.latent_model.predict(
+            recos, z1, z2, _, _, _, _ = self.latent_model.predict(
                 images, batch_size=self.batch_size)
         except ValueError:
-            recos, z1, z2 = self.latent_model.predict(
+            recos, z1, z2, _, _, _, _ = self.latent_model.predict(
                 images.reshape(self.batch_size, 28 * 28),
                 batch_size=self.batch_size)
 
@@ -188,12 +216,12 @@ class VAEPlotter:
             return contrasted_images.reshape(self.batch_size, 784), contrasted_images.reshape(self.batch_size, 784)
 
         try:
-            reco, z1, z2 = self.latent_model.predict_generator(contrast_flow(
+            reco, z1, z2, _, _, _, _ = self.latent_model.predict_generator(contrast_flow(
             self.datagen.flow()),
                                                            steps=50,
                                                            verbose=1)
         except ValueError:
-            reco, z1, z2 = self.latent_model.predict_generator(conv_contrast_flow(
+            reco, z1, z2, _, _, _, _ = self.latent_model.predict_generator(conv_contrast_flow(
             self.datagen.flow()),
                                                            steps=50,
                                                            verbose=1)

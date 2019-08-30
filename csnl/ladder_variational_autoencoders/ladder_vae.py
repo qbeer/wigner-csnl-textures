@@ -146,7 +146,12 @@ class LadderVAE:
         # Model for latent inference
         z1 = self.z1
         z2 = self.z2
-        latent_model = Model(input_img, outputs=[reco, z1, z2])
+        z_mean_BU = self.z1_mean_BU
+        z_log_var_BU = self.z1_log_sigma_BU
+        z_mean_TD = self.z1_mean_TD
+        z_log_var_TD = self.z1_log_sigma_TD
+        args = z_mean_BU, z_log_var_BU, z_mean_TD, z_log_var_TD
+        latent_model = Model(input_img, outputs=[reco, z1, z2, z_mean_BU, z_log_var_BU, z_mean_TD, z_log_var_TD])
 
         self.latent_dim = self.latent_dim2
 

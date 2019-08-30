@@ -28,10 +28,11 @@ trainer = ModelTrainer(vae,
                        decay=1e-5,
                        beta=1)
 
-trainer.fit(4, 10, contrast=True, warm_up=True, make_gif=True)
+trainer.fit(10, 1000, contrast=True, warm_up=True, make_gif=True)
 
 plotter = VAEPlotter(trainer, data_gen, data_gen_labels, grid_size=8)
 plotter.plot_contrast_correlations(latent_dim2=LATENT_DIM1)
 plotter.plot_label_correlations()
 plotter.grid_plot()
 plotter.generate_samples()
+plotter.plot_td_bu_values(LATENT_DIM1)

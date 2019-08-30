@@ -40,7 +40,8 @@ class VariationalAutoEncoder(Encoder):
         generator = Model(decoder_input, _reco)
 
         # Model for later inference
-        latent_model = Model(input_img, outputs=[reco, z, z])
+        # None, None added for compatibility
+        latent_model = Model(input_img, outputs=[reco, z, None, None, None, None, None])
 
         model = Model(input_img, reco)
         model.beta = K.variable(self.beta)
