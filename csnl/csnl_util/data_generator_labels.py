@@ -1,13 +1,14 @@
 from keras.preprocessing.image import ImageDataGenerator
 import numpy as np
 from .data_loader import DataLoader
+import os
 
 
 class DataGeneratorWithLabels:
     def __init__(self,
                  image_shape,
                  batch_size,
-                 file_path='/data/scramtex_700_28px.pkl',
+                 file_path=os.getcwd() + '/csnl/data/scramtex_700_28px.pkl',
                  binarize=False,
                  whiten=False,
                  contrast_normalize=False):
@@ -19,8 +20,9 @@ class DataGeneratorWithLabels:
         self.TRAIN, self.TRAIN_LABELS, self.TEST, self.TEST_LABELS = self.DATA_LOADER.get_data_and_labels(
         )
         print("Train SHAPE : ", self.TRAIN.shape)
-        means = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: []}
-        stds = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: []}
+        means = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7 : [], 8: [], 9: []}
+        stds = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7 : [], 8: [], 9: []}
+        print(self.TRAIN_LABELS)
         for ind, label in enumerate(self.TRAIN_LABELS):
             means[label].append(self.TRAIN[ind])
         for K in means.keys():
@@ -30,8 +32,30 @@ class DataGeneratorWithLabels:
         print("STD : ", stds)
 
         print("Test SHAPE : ", self.TEST.shape)
-        means = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: []}
-        stds = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: []}
+        means = {
+            0: [],
+            1: [],
+            2: [],
+            3: [],
+            4: [],
+            5: [],
+            6: [],
+            7: [],
+            8: [],
+            9: []
+        }
+        stds = {
+            0: [],
+            1: [],
+            2: [],
+            3: [],
+            4: [],
+            5: [],
+            6: [],
+            7: [],
+            8: [],
+            9: []
+        }
         for ind, label in enumerate(self.TEST_LABELS):
             means[label].append(self.TEST[ind])
         for K in means.keys():

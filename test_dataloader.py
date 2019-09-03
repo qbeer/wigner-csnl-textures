@@ -26,5 +26,5 @@ for ind, ax in enumerate(axes.flatten()):
     ax.imshow(images[ind].reshape(28, 28), vmin=0, vmax=1)
 
 fig.tight_layout()
-plt.savefig("contrast_normalized.png", dpi=200)
+plt.savefig(os.getcwd() + "/results/contrast_normalized.png", dpi=200)
 plt.show()

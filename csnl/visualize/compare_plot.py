@@ -3,6 +3,7 @@ import matplotlib.gridspec as gridspec
 import numpy as np
 from keras.utils import to_categorical
 from scipy.stats import pearsonr
+import os
 
 
 class VAEPlotter:
@@ -50,16 +51,16 @@ class VAEPlotter:
                 if inner_ind % 2 == 0:
                     if inner_ind < 4:
                         ax.set_title('Reconstructed')
-                    ax.imshow(
-                        reco[outer_ind][inner_ind].reshape(*self.image_shape),
-                        interpolation='none',
-                        vmin=0,
-                        vmax=1)
+                    ax.imshow(reco[outer_ind][inner_ind].reshape(
+                        *self.image_shape),
+                              interpolation='none',
+                              vmin=0,
+                              vmax=1)
                 else:
                     if inner_ind < 4:
                         ax.set_title(' <- Original')
-                    ax.imshow(images[outer_ind][inner_ind -
-                                                1].reshape(*self.image_shape),
+                    ax.imshow(images[outer_ind][inner_ind - 1].reshape(
+                        *self.image_shape),
                               interpolation='none',
                               vmin=0,
                               vmax=1)
@@ -68,7 +69,8 @@ class VAEPlotter:
                 fig.add_subplot(ax)
 
         fig.suptitle("Train and test reconstructions\n\n")
-        plt.savefig("reconstrunction_samples.png", dpi=200)
+        plt.savefig(os.getcwd() + "/results/reconstrunction_samples.png",
+                    dpi=200)
         plt.show()
 
     def generate_samples(self, vmax=1):
@@ -113,9 +115,9 @@ class VAEPlotter:
 
         fig.suptitle("Generated samples on %d - dimensional grid" %
                      self._latent_dim)
-        plt.savefig("generated_samples.png", dpi=200)
+        plt.savefig(os.getcwd() + "/results/generated_samples.png", dpi=200)
         plt.show()
-    
+
     def plot_td_bu_values(self, latent_dim1):
         images, labels = next(self.label_datagen.flow())
         try:
@@ -125,23 +127,39 @@ class VAEPlotter:
             recos, z1, z2, z_mean_BU, z_log_var_BU, z_mean_TD, z_log_var_TD = self.latent_model.predict(
                 images.reshape(self.batch_size, 28 * 28),
                 batch_size=self.batch_size)
-        
+
         mean_and_vars = [[z_mean_BU, z_log_var_BU], [z_mean_TD, z_log_var_TD]]
         names = ['Bottom up values', 'Top down values']
-        fig, axes = plt.subplots(2, 2, sharex=False, sharey=False, figsize=(7, 9))
+        fig, axes = plt.subplots(2,
+                                 2,
+                                 sharex=False,
+                                 sharey=False,
+                                 figsize=(7, 9))
         for ind in range(0, 2):
             mean, var = mean_and_vars[ind // 2]
-            axes[ind, 0].hist(np.mean(z1, axis=0),  bins=100, alpha=0.2, label="z1")
-            axes[ind, 1].hist(np.std(z1, axis=0), bins=100, alpha=0.2, label="z1")
-            axes[ind, 0].hist(np.mean(mean, axis=0),  bins=100, alpha=0.2, label="other")
-            axes[ind, 1].hist(np.exp(np.mean(var, axis=0)), bins=100, alpha=0.2, label="other")
+            axes[ind, 0].hist(np.mean(z1, axis=0),
+                              bins=100,
+                              alpha=0.2,
+                              label="z1")
+            axes[ind, 1].hist(np.std(z1, axis=0),
+                              bins=100,
+                              alpha=0.2,
+                              label="z1")
+            axes[ind, 0].hist(np.mean(mean, axis=0),
+                              bins=100,
+                              alpha=0.2,
+                              label="other")
+            axes[ind, 1].hist(np.exp(np.mean(var, axis=0)),
+                              bins=100,
+                              alpha=0.2,
+                              label="other")
             axes[ind, 0].set_title(names[ind] + " - mean")
             axes[ind, 0].set_xlim(-2, 2)
             axes[ind, 1].set_title(names[ind] + " - sigma")
             axes[ind, 0].legend(loc='upper right')
             axes[ind, 1].legend(loc='upper right')
         fig.tight_layout()
-        plt.savefig("TD_BU_COMPS.png", dpi=200)
+        plt.savefig(os.getcwd() + "/results/TD_BU_COMPS.png", dpi=200)
         plt.show()
 
     def plot_label_correlations(self):
@@ -185,7 +203,9 @@ class VAEPlotter:
             plt.xticks(np.arange(1, self._latent_dim, 2))
             plt.xlabel('Latent parameters')
             plt.ylabel('Pearson-correlation')
-            plt.savefig('cat-%d-to-z2-corr.png' % (cat + 1), dpi=150)
+            plt.savefig(os.getcwd() + "/results/cat-%d-to-z2-corr.png" %
+                        (cat + 1),
+                        dpi=150)
             plt.show()
 
     def plot_contrast_correlations(self, latent_dim2=None):
@@ -196,13 +216,15 @@ class VAEPlotter:
                     yield _contrast(batch_x)
 
             return train_generator(_flow)
-        
+
         def conv_contrast_flow(_flow):
             def train_generator(_it):
                 while True:
                     batch_x, batch_y = next(_it)
                     batch_x, batch_y = _contrast(batch_x)
-                    yield batch_x.reshape(self.batch_size, 28, 28, 1), batch_y.reshape(self.batch_size, 28, 28, 1)
+                    yield batch_x.reshape(self.batch_size, 28, 28,
+                                          1), batch_y.reshape(
+                                              self.batch_size, 28, 28, 1)
 
         random_contrasts = []
 
@@ -213,18 +235,16 @@ class VAEPlotter:
                 random_contrasts.append(contrast)
                 contrasted_images[ind] = np.clip(
                     contrast * (images[ind] - 0.5) + 0.5, 0, 1)
-            return contrasted_images.reshape(self.batch_size, 784), contrasted_images.reshape(self.batch_size, 784)
+            return contrasted_images.reshape(self.batch_size,
+                                             784), contrasted_images.reshape(
+                                                 self.batch_size, 784)
 
         try:
-            reco, z1, z2, _, _, _, _ = self.latent_model.predict_generator(contrast_flow(
-            self.datagen.flow()),
-                                                           steps=50,
-                                                           verbose=1)
+            reco, z1, z2, _, _, _, _ = self.latent_model.predict_generator(
+                contrast_flow(self.datagen.flow()), steps=50, verbose=1)
         except ValueError:
-            reco, z1, z2, _, _, _, _ = self.latent_model.predict_generator(conv_contrast_flow(
-            self.datagen.flow()),
-                                                           steps=50,
-                                                           verbose=1)
+            reco, z1, z2, _, _, _, _ = self.latent_model.predict_generator(
+                conv_contrast_flow(self.datagen.flow()), steps=50, verbose=1)
 
         random_contrasts = np.array(random_contrasts).flatten()[:reco.shape[0]]
         reco = reco.reshape(reco.shape[0], 28, 28)
@@ -235,7 +255,10 @@ class VAEPlotter:
             self._latent_correlation(z1, random_contrasts, "z1", latent_dim2)
             self._stats(z1, latent_dim2, "z1")
 
-    def _latent_correlation(self, z, random_contrasts, latent_name,
+    def _latent_correlation(self,
+                            z,
+                            random_contrasts,
+                            latent_name,
                             latent_dim=None):
         fig = plt.figure(figsize=(10, 8))
 
@@ -259,7 +282,9 @@ class VAEPlotter:
         plt.xticks(np.arange(1, latent_dim, 2))
         plt.xlabel('Latent parameters')
         plt.ylabel('Pearson-correlation')
-        plt.savefig('contrast-to-%s-corr.png' % latent_name, dpi=150)
+        plt.savefig(os.getcwd() +
+                    "/results/contrast-to-%s-corr.png" % latent_name,
+                    dpi=150)
         plt.show()
 
     def _stats(self, z, latent_dim, name):
@@ -272,5 +297,6 @@ class VAEPlotter:
                      fmt='o')
         plt.xticks(np.linspace(0, latent_dim, 17))
         plt.title('Mean and standard deviation of %s' % name)
-        plt.savefig('mean-and-std-of-%s.png' % name, dpi=150)
+        plt.savefig(os.getcwd() + "/results/mean-and-std-of-%s.png" % name,
+                    dpi=150)
         plt.show()

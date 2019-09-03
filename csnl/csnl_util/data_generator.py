@@ -1,13 +1,13 @@
 from keras.preprocessing.image import ImageDataGenerator
 import numpy as np
 from .data_loader import DataLoader
-
+import os
 
 class DataGenerator:
     def __init__(self,
                  image_shape,
                  batch_size,
-                 file_path='/data/scramtex_700_28px.pkl',
+                 file_path=os.getcwd() + '/csnl/data/scramtex_700_28px.pkl',
                  binarize=False,
                  whiten=False,
                  contrast_normalize=False):

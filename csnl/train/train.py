@@ -60,7 +60,7 @@ class ModelTrainer:
             plt.ylabel('Loss')
             plt.xlabel('Epoch')
             plt.legend(['train', 'validation'], loc='upper right')
-            plt.savefig("loss.png", dpi=200)
+            plt.savefig(os.getcwd() + "/results/loss.png", dpi=200)
             plt.show()
 
     def _get_callbacks(self, n_epochs, warm_up, make_gif):
@@ -78,10 +78,10 @@ class ModelTrainer:
     def _save_model(self):
         print("Saving the trained inference, generator and latent models...\t",
               end='')
-        self.model.save(os.getcwd() + "/model.h5")
-        self.generator.save(os.getcwd() + "/generator_model.h5")
+        self.model.save(os.getcwd() + "/results/model.h5")
+        self.generator.save(os.getcwd() + "/results/generator_model.h5")
         """
             This must be acquired here before we are after training at this point!
         """
-        self.latent_model.save(os.getcwd() + "/latent_model.h5")
+        self.latent_model.save(os.getcwd() + "/results/latent_model.h5")
         self.saved = True
