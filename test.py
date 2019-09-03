@@ -23,11 +23,11 @@ trainer = ModelTrainer(vae,
                        loss_fn="normal",
                        lr=1e-5,
                        decay=1e-5,
-                       beta=1)
+                       beta=100)
 
-trainer.fit(10, 500, warm_up=True)
+trainer.fit(150, 1000, warm_up=True)
 
-plotter = VAEPlotter(trainer, data_gen, None, grid_size=16)
+plotter = VAEPlotter(trainer, data_gen, None, grid_size=10)
 plotter.grid_plot()
 plotter.generate_samples()
 

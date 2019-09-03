@@ -13,6 +13,7 @@ build/
 tmp/
 test_runs/*/*.h5
 test_runs/*/*.gif
+results/
 
 
 # Byte-compiled / optimized / DLL files

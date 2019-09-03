@@ -54,12 +54,23 @@ class ModelTrainer:
                     self.gifCallBack._remove_on_error()
         finally:
             self._save_model()
+            plt.figure(figsize=(12, 7))
+            if self.beta:
+                plt.subplot(1, 2, 1)
             plt.title("Model loss")
             plt.plot(self.history.history['loss'])
             plt.plot(self.history.history['val_loss'])
             plt.ylabel('Loss')
             plt.xlabel('Epoch')
             plt.legend(['train', 'validation'], loc='upper right')
+            if self.beta != None:
+                plt.subplot(1, 2, 2)
+                plt.title("KL-divergence with beta_max = %.2f " % self.beta)
+                plt.plot(self.history.history['KL_divergence'])
+                plt.plot(self.history.history['val_KL_divergence'])
+                plt.ylabel('KL term')
+                plt.xlabel('Epoch')
+                plt.legend(['train', 'validation'], loc='upper right')
             plt.savefig(os.getcwd() + "/results/loss.png", dpi=200)
             plt.show()
 
