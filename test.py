@@ -25,7 +25,7 @@ trainer = ModelTrainer(vae,
                        decay=1e-5,
                        beta=100)
 
-trainer.fit(150, 1000, warm_up=True)
+trainer.fit(1500, 1000, warm_up=True)
 
 plotter = VAEPlotter(trainer, data_gen, None, grid_size=10)
 plotter.grid_plot()
