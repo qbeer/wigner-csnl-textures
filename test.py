@@ -6,10 +6,15 @@ from shutil import copyfile
 from csnl import DataGeneratorWithLabels, DataGenerator, \
     DenseLadderVAE, VAEPlotter, ModelTrainer
 
+label_data_gen = DataGeneratorWithLabels(image_shape=(28, 28, 1),
+                                         batch_size=100,
+                                         file_path=os.getcwd() +
+                                         "/csnl/data/textures_42000_28px.pkl")
+
 data_gen = DataGenerator(image_shape=(28, 28, 1),
                          batch_size=100,
                          file_path=os.getcwd() +
-                         "/csnl/data/natural_80000_28px.pkl")
+                         "/csnl/data/textures_42000_28px.pkl")
 
 LATENT_DIM2 = 16
 LATENT_DIM1 = 16 * 4
@@ -25,10 +30,12 @@ trainer = ModelTrainer(vae,
                        decay=1e-5,
                        beta=100)
 
-trainer.fit(1500, 1000, warm_up=True)
+trainer.fit(1200, 1000, warm_up=True)
 
-plotter = VAEPlotter(trainer, data_gen, None, grid_size=10)
+plotter = VAEPlotter(trainer, data_gen, label_data_gen, grid_size=10)
 plotter.grid_plot()
 plotter.generate_samples()
+plotter.plot_contrast_correlations()
+plotter.plot_label_correlations()
 
 copyfile(os.getcwd() + "/test.py", os.getcwd() + "/results/test.py")
