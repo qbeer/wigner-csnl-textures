@@ -86,8 +86,12 @@ plotter.generate_samples()
 
 * the plotter creates plots for analysis
 
-![reconstruction](test_runs/2/reconstrunction_samples.png)
+![reconstruction](test_runs/1_DenseLadderVAE_noContrastNormalization/reconstrunction_samples.png)
 
-![loss](test_runs/2/loss.png)
+Overfitting:
 
-![generated_samples](test_runs/2/generated_samples.png)
+![loss](test_runs/1_DenseLadderVAE_noContrastNormalization/loss.png)
+
+However, really good generated samples:
+
+![generated_samples](test_runs/1_DenseLadderVAE_noContrastNormalization/generated_samples.png)
