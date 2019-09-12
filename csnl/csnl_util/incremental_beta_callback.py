@@ -12,7 +12,7 @@ class IncrementalBeta(Callback):
         K.set_value(self.model.beta, self.beta)
 
     def on_epoch_end(self, epoch, logs=None):
-        updated_beta = self.beta + self.beta_max / (4 * self.n_epochs // 7)
+        updated_beta = self.beta + self.beta_max / (3 * self.n_epochs // 7)
         if updated_beta < self.beta_max:
             self.beta = updated_beta
             print("Beta updated : ", self.beta)
