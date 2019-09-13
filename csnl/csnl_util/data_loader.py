@@ -79,7 +79,6 @@ class DataLoader:
     def train_test_split(self):
         try:
             X_train, y_train, X_test, y_test = self.get_data_and_labels()
-            print('returning here')
             return (X_train, X_test)
         except KeyError:
             print('not getting here')
