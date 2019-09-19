@@ -41,7 +41,7 @@ class VariationalAutoEncoder(Encoder):
 
         # Model for later inference
         # None, None added for compatibility
-        latent_model = Model(input_img, outputs=[reco, z, z, z, z, z, z])
+        latent_model = Model(input_img, outputs=[reco, z, z, z, z, z, z, z, z])
 
         model = Model(input_img, reco)
         model.beta = K.variable(self.beta)

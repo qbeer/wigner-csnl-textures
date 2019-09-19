@@ -21,7 +21,11 @@ class AutoEncoder(Encoder):
         _decoded = decoder(latent_input)
         generative_model = Model(latent_input, _decoded)
 
-        latent_model = Model(input_img, outputs=[decoded, latent, latent, latent, latent, latent, latent])
+        latent_model = Model(input_img,
+                             outputs=[
+                                 decoded, latent, latent, latent, latent,
+                                 latent, latent, latent, latent
+                             ])
 
         losses = Losses(loss_fn, observation_noise)
 
