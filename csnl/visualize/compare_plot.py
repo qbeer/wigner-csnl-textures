@@ -121,22 +121,23 @@ class VAEPlotter:
     def plot_td_bu_values(self, latent_dim1):
         images, _ = next(self.datagen.flow())
         for IMAGE_INDEX in range(images.shape[0]):
+            _images = np.copy(images)
             for ind in range(
                     images.shape[0]):  # predict same element of the batch
-                images[ind] = images[IMAGE_INDEX]
+                _images[ind] = images[IMAGE_INDEX]
 
             try:
                 recos, z1, z1_mean, z1_sigma, z2, z_mean_BU, z_log_var_BU, z_mean_TD, z_log_var_TD = self.latent_model.predict(
-                    images, batch_size=self.batch_size)
+                    _images, batch_size=self.batch_size)
             except ValueError:
                 recos, z1, z1_mean, z1_sigma, z2, z_mean_BU, z_log_var_BU, z_mean_TD, z_log_var_TD = self.latent_model.predict(
-                    images.reshape(self.batch_size, 28 * 28),
+                    _images.reshape(self.batch_size, 28 * 28),
                     batch_size=self.batch_size)
 
             mean_and_vars = [[z_mean_BU, z_log_var_BU],
                              [z_mean_TD, z_log_var_TD]]
             names = ['Bottom up values', 'Top down values']
-            for img_ind in range(images.shape[0]):
+            for img_ind in range(_images.shape[0]):
                 fig, axes = plt.subplots(3,
                                          2,
                                          sharex=False,
@@ -160,13 +161,21 @@ class VAEPlotter:
                                       bins=10,
                                       alpha=0.2,
                                       label="other")
+                    axes[ind, 0].hist(mean[img_ind] - z1_mean[img_ind],
+                                      bins=10,
+                                      alpha=0.2,
+                                      label="difference")
+                    axes[ind, 1].hist(np.exp(var[img_ind]) - z1_sigma[img_ind],
+                                      bins=10,
+                                      alpha=0.1,
+                                      label="difference")
                     axes[ind, 0].set_title(names[ind] + " - mean")
                     axes[ind, 1].set_title(names[ind] + " - sigma")
                     axes[ind, 0].legend(loc='upper right')
                     axes[ind, 1].legend(loc='upper right')
-                axes[2, 0].imshow(images[0].reshape(28, 28))
+                axes[2, 0].imshow(_images[img_ind].reshape(28, 28))
                 axes[2, 0].set_title('Original image')
-                axes[2, 1].imshow(recos[0].reshape(28, 28))
+                axes[2, 1].imshow(recos[img_ind].reshape(28, 28))
                 axes[2, 1].set_title('Reconstructed image')
                 fig.tight_layout()
                 plt.savefig(os.getcwd() + "/results/%d_TD_BU_COMPS_%d.png" %

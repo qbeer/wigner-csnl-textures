@@ -2,6 +2,8 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 import os
+os.environ['CUDA_VISIBLE_DEVICES'] = "1"
+
 from csnl import DataGeneratorWithLabels, DataGenerator, \
     DenseLadderVAE, VAEPlotter, ModelTrainer
 
