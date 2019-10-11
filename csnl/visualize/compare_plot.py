@@ -70,7 +70,7 @@ class VAEPlotter:
 
         fig.suptitle("Train and test reconstructions\n\n")
         plt.savefig(os.getcwd() + "/results/reconstrunction_samples.png",
-                    dpi=200)
+                    dpi=50)
         plt.show()
 
     def generate_samples(self, vmax=1):
@@ -115,7 +115,7 @@ class VAEPlotter:
 
         fig.suptitle("Generated samples on %d - dimensional grid" %
                      self._latent_dim)
-        plt.savefig(os.getcwd() + "/results/generated_samples.png", dpi=200)
+        plt.savefig(os.getcwd() + "/results/generated_samples.png", dpi=50)
         plt.show()
 
     def plot_td_bu_values(self, latent_dim1):
@@ -144,7 +144,7 @@ class VAEPlotter:
                                          sharey=False,
                                          figsize=(7, 9))
                 for ind in range(0, 2):
-                    mean, var = mean_and_vars[ind]
+                    mean, log_var = mean_and_vars[ind]
                     axes[ind, 0].hist(z1_mean[img_ind],
                                       bins=10,
                                       alpha=0.2,
@@ -157,18 +157,10 @@ class VAEPlotter:
                                       bins=10,
                                       alpha=0.2,
                                       label="other")
-                    axes[ind, 1].hist(np.exp(var[img_ind]),
+                    axes[ind, 1].hist(np.exp(log_var[img_ind]),
                                       bins=10,
                                       alpha=0.2,
                                       label="other")
-                    axes[ind, 0].hist(mean[img_ind] - z1_mean[img_ind],
-                                      bins=10,
-                                      alpha=0.2,
-                                      label="difference")
-                    axes[ind, 1].hist(np.exp(var[img_ind]) - z1_sigma[img_ind],
-                                      bins=10,
-                                      alpha=0.1,
-                                      label="difference")
                     axes[ind, 0].set_title(names[ind] + " - mean")
                     axes[ind, 1].set_title(names[ind] + " - sigma")
                     axes[ind, 0].legend(loc='upper right')
@@ -226,7 +218,7 @@ class VAEPlotter:
             plt.ylabel('Pearson-correlation')
             plt.savefig(os.getcwd() + "/results/cat-%d-to-z2-corr.png" %
                         (cat + 1),
-                        dpi=150)
+                        dpi=50)
             plt.show()
 
     def plot_contrast_correlations(self, latent_dim2=None):
@@ -305,7 +297,7 @@ class VAEPlotter:
         plt.ylabel('Pearson-correlation')
         plt.savefig(os.getcwd() +
                     "/results/contrast-to-%s-corr.png" % latent_name,
-                    dpi=150)
+                    dpi=50)
         plt.show()
 
     def _stats(self, z, latent_dim, name):
@@ -319,5 +311,5 @@ class VAEPlotter:
         plt.xticks(np.linspace(0, latent_dim, 17))
         plt.title('Mean and standard deviation of %s' % name)
         plt.savefig(os.getcwd() + "/results/mean-and-std-of-%s.png" % name,
-                    dpi=150)
+                    dpi=50)
         plt.show()

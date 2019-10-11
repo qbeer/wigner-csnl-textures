@@ -36,7 +36,7 @@ class GifCallBack(Callback):
             ax.set_xticks([])
             ax.set_yticks([])
 
-        fig.savefig(os.getcwd() + "/tmp/" + str(epoch) + ".png", dpi=100)
+        fig.savefig(os.getcwd() + "/tmp/" + str(epoch) + ".png", dpi=50)
         plt.close(fig)
 
     def _plot_samples(self, latent_inputs):

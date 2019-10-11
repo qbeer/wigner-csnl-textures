@@ -71,7 +71,7 @@ class ModelTrainer:
                 plt.ylabel('KL term')
                 plt.xlabel('Epoch')
                 plt.legend(['train', 'validation'], loc='upper right')
-            plt.savefig(os.getcwd() + "/results/loss.png", dpi=200)
+            plt.savefig(os.getcwd() + "/results/loss.png", dpi=50)
             plt.show()
 
     def _get_callbacks(self, n_epochs, warm_up, make_gif):
