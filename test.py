@@ -1,11 +1,4 @@
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = "1"
-
-import warnings
-warnings.simplefilter(action='ignore', category=FutureWarning)
-
-from shutil import copyfile
-
 from csnl import DataGeneratorWithLabels, DataGenerator, \
     DenseLadderVAE, VAEPlotter, ModelTrainer
 
@@ -35,13 +28,10 @@ trainer = ModelTrainer(vae,
                        decay=1e-4,
                        beta=1)
 
-trainer.fit(2000, 2000, contrast=True, warm_up=True)
+trainer.fit(100, 2000, contrast=True, warm_up=True, make_gif=True)
 
 plotter = VAEPlotter(trainer, data_gen, data_gen_labels, grid_size=8)
-plotter.plot_contrast_correlations(latent_dim2=LATENT_DIM1)
+plotter.plot_contrast_correlations()
 plotter.plot_label_correlations()
 plotter.grid_plot()
 plotter.generate_samples()
-plotter.plot_td_bu_values(LATENT_DIM1)
-
-copyfile(os.getcwd() + "/test.py", os.getcwd() + "/results/test.py")

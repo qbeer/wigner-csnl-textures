@@ -43,7 +43,7 @@ class DenseLadderVAE_BN(LadderVAE_BN):
         x = Dense(512)(x)
         x = BatchNormalization()(x)
         x = ReLU()(x)
-        x = Dense(self._mean_variance_input_shape)(x)
+        x = Dense(self._mean_sigma_input_shape)(x)
         x = BatchNormalization()(x)
         reco = ReLU()(x)
         decoder = Model(latent2, reco, name="dense_decoder_2")

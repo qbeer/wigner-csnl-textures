@@ -53,7 +53,7 @@ class ConvLadderVAE_BN(LadderVAE_BN):
         x = BatchNormalization()(x)
         x = ReLU()(x)
         x = Flatten()(x)
-        x = Dense(self._mean_variance_input_shape)(x)
+        x = Dense(self._mean_sigma_input_shape)(x)
         x = BatchNormalization()(x)
         reco = ReLU()(x)
         decoder = Model(latent2, reco, name="convolutional_decoder_2")

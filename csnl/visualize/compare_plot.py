@@ -134,46 +134,52 @@ class VAEPlotter:
                     _images.reshape(self.batch_size, 28 * 28),
                     batch_size=self.batch_size)
 
-            mean_and_vars = [[z_mean_BU, z_log_var_BU],
-                             [z_mean_TD, z_log_var_TD]]
-            names = ['Bottom up values', 'Top down values']
-            for img_ind in range(_images.shape[0]):
-                fig, axes = plt.subplots(3,
-                                         2,
-                                         sharex=False,
-                                         sharey=False,
-                                         figsize=(7, 9))
-                for ind in range(0, 2):
-                    mean, log_var = mean_and_vars[ind]
-                    axes[ind, 0].hist(z1_mean[img_ind],
-                                      bins=10,
-                                      alpha=0.2,
-                                      label="z1")
-                    axes[ind, 1].hist(z1_sigma[img_ind],
-                                      bins=10,
-                                      alpha=0.2,
-                                      label="z1")
-                    axes[ind, 0].hist(mean[img_ind],
-                                      bins=10,
-                                      alpha=0.2,
-                                      label="other")
-                    axes[ind, 1].hist(np.exp(log_var[img_ind]),
-                                      bins=10,
-                                      alpha=0.2,
-                                      label="other")
-                    axes[ind, 0].set_title(names[ind] + " - mean")
-                    axes[ind, 1].set_title(names[ind] + " - sigma")
-                    axes[ind, 0].legend(loc='upper right')
-                    axes[ind, 1].legend(loc='upper right')
-                axes[2, 0].imshow(_images[img_ind].reshape(28, 28))
-                axes[2, 0].set_title('Original image')
-                axes[2, 1].imshow(recos[img_ind].reshape(28, 28))
-                axes[2, 1].set_title('Reconstructed image')
-                fig.tight_layout()
-                plt.savefig(os.getcwd() + "/results/%d_TD_BU_COMPS_%d.png" %
-                            (IMAGE_INDEX + 1, img_ind + 1),
-                            dpi=50)
-                plt.close(fig)
+            self._plot_td_bu_comparisons(z_mean_BU, z_log_var_BU, z_mean_TD,
+                                         z_log_var_TD, _images, z1_mean,
+                                         z1_sigma, recos, IMAGE_INDEX)
+
+    def _plot_td_bu_comparisons(self, z_mean_BU, z_log_var_BU, z_mean_TD,
+                                z_log_var_TD, _images, z1_mean, z1_sigma,
+                                recos, IMAGE_INDEX):
+        mean_and_vars = [[z_mean_BU, z_log_var_BU], [z_mean_TD, z_log_var_TD]]
+        names = ['Bottom up values', 'Top down values']
+        for img_ind in range(_images.shape[0]):
+            fig, axes = plt.subplots(3,
+                                     2,
+                                     sharex=False,
+                                     sharey=False,
+                                     figsize=(7, 9))
+            for ind in range(0, 2):
+                mean, log_var = mean_and_vars[ind]
+                axes[ind, 0].hist(z1_mean[img_ind],
+                                  bins=10,
+                                  alpha=0.2,
+                                  label="z1")
+                axes[ind, 1].hist(z1_sigma[img_ind],
+                                  bins=10,
+                                  alpha=0.2,
+                                  label="z1")
+                axes[ind, 0].hist(mean[img_ind],
+                                  bins=10,
+                                  alpha=0.2,
+                                  label="other")
+                axes[ind, 1].hist(np.exp(log_var[img_ind]),
+                                  bins=10,
+                                  alpha=0.2,
+                                  label="other")
+                axes[ind, 0].set_title(names[ind] + " - mean")
+                axes[ind, 1].set_title(names[ind] + " - sigma")
+                axes[ind, 0].legend(loc='upper right')
+                axes[ind, 1].legend(loc='upper right')
+            axes[2, 0].imshow(_images[img_ind].reshape(28, 28))
+            axes[2, 0].set_title('Original image')
+            axes[2, 1].imshow(recos[img_ind].reshape(28, 28))
+            axes[2, 1].set_title('Reconstructed image')
+            fig.tight_layout()
+            plt.savefig(os.getcwd() + "/results/%d_TD_BU_COMPS_%d.png" %
+                        (IMAGE_INDEX + 1, img_ind + 1),
+                        dpi=50)
+            plt.close(fig)
 
     def plot_label_correlations(self):
         images, labels = next(self.label_datagen.flow())

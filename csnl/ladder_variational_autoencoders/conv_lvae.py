@@ -44,7 +44,7 @@ class ConvLadderVAE(LadderVAE):
         x = Conv2D(64, (2, 2), padding='same')(x)
         x = ReLU()(x)
         x = Flatten()(x)
-        x = Dense(self._mean_variance_input_shape)(x)
+        x = Dense(self._mean_sigma_input_shape)(x)
         reco = ReLU()(x)
         decoder = Model(latent2, reco, name="convolutional_decoder_2")
         return decoder
