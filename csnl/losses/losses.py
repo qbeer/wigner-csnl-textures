@@ -1,3 +1,6 @@
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 import tensorflow as tf
 import tensorflow_probability as tfp
 import keras.backend as K

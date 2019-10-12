@@ -245,6 +245,8 @@ class VAEPlotter:
                                           1), batch_y.reshape(
                                               self.batch_size, 28, 28, 1)
 
+            return train_generator(_flow)
+
         random_contrasts = []
 
         def _contrast(images):
@@ -262,7 +264,7 @@ class VAEPlotter:
             reco, z1, z1_mean, z1_sigma, z2, _, _, _, _ = self.latent_model.predict_generator(
                 contrast_flow(self.datagen.flow()), steps=50, verbose=1)
         except ValueError:
-            reco, z1, z2, _, _, _, _ = self.latent_model.predict_generator(
+            reco, z1, _, _, z2, _, _, _, _ = self.latent_model.predict_generator(
                 conv_contrast_flow(self.datagen.flow()), steps=50, verbose=1)
 
         random_contrasts = np.array(random_contrasts).flatten()[:reco.shape[0]]
@@ -310,8 +312,8 @@ class VAEPlotter:
         fig = plt.figure(figsize=(20, 10))
 
         plt.errorbar(x=range(latent_dim),
-                     y=np.mean(z, axis=0),
-                     yerr=np.std(z, axis=0),
+                     y=np.mean(z, axis=0).flatten(),
+                     yerr=np.std(z, axis=0).flatten(),
                      ecolor='r',
                      fmt='o')
         plt.xticks(np.linspace(0, latent_dim, 17))

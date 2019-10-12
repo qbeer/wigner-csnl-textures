@@ -11,11 +11,11 @@
 
 ## VAE implementations
 
-![vae-visualization](./vae_keras.png)
+![vae-visualization](./data/vae_keras.png)
 
 LVAE implementation
 
-![lvae-visualization](./lvae_keras.png)
+![lvae-visualization](./data/dense_lvae_keras.png)
 
 * also implemented traing time latent space generation, a GIF is saved during training from images generated from the same random sample on epoch end
 

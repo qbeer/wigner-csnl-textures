@@ -1,3 +1,6 @@
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 from ..losses import Losses
 from abc import abstractmethod
 from keras.layers import Input, Dense, ReLU, Lambda, Add, BatchNormalization
@@ -40,7 +43,7 @@ class LadderVAE_BN:
     def mean_log_variance_model(self):
         inp = Input(shape=(self._mean_sigma_input_shape, ))
         mean, log_var = Dense(self.latent_dim1)(inp), Dense(
-            self.latent_dim1, activation='softplus')(inp)
+            self.latent_dim1)(inp)
         mean, log_var = BatchNormalization()(mean), BatchNormalization()(
             log_var)
         model = Model(inp, [mean, log_var], name="mean_log_variance_model")
@@ -96,8 +99,7 @@ class LadderVAE_BN:
         self.z2_mean, self.z2_log_sigma = Dense(self.latent_dim2,
                                                 name="mean_z2")(d2), Dense(
                                                     self.latent_dim2,
-                                                    name="log_sigma_z2",
-                                                    activation='softplus')(d2)
+                                                    name="log_sigma_z2")(d2)
 
         self.z2_mean, self.z2_log_sigma = BatchNormalization()(
             self.z2_mean), BatchNormalization()(self.z2_log_sigma)
@@ -114,9 +116,7 @@ class LadderVAE_BN:
         self.z1_mean_BU, self.z1_log_sigma_BU = BatchNormalization()(
             Dense(self.latent_dim1,
                   name="bottom_up_mean")(d1)), BatchNormalization()(Dense(
-                      self.latent_dim1,
-                      name="bottom_up_log_sigma",
-                      activation='softplus')(d1))
+                      self.latent_dim1, name="bottom_up_log_sigma")(d1))
 
         # Combine mean and sigma
         self.z1_sigma = Lambda(self._get_sigma, name="calculate_sigma_z1")(

@@ -1,3 +1,6 @@
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 from abc import abstractmethod
 from keras.layers import Input, Dense, Lambda
 from keras.models import Model

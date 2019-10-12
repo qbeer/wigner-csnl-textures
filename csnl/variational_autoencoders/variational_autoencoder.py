@@ -1,3 +1,6 @@
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 from keras.optimizers import Adam, RMSprop
 from keras.layers import Lambda, Dense, Input
 from keras.models import Model

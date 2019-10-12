@@ -1,6 +1,9 @@
 import os
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 import tensorflow as tf
 from keras.backend.tensorflow_backend import set_session
 config = tf.ConfigProto()
