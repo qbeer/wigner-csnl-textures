@@ -1,6 +1,6 @@
 import os
 from csnl import DataGeneratorWithLabels, DataGenerator, \
-    DenseLinearLadderVAE, VAEPlotter, ModelTrainer
+    ConvolutionalVAE, VAEPlotter, ModelTrainer
 
 from shutil import copyfile
 
@@ -19,9 +19,7 @@ data_gen = DataGenerator(image_shape=(28, 28, 1),
 LATENT_DIM1 = 16 * 4
 LATENT_DIM2 = 16
 
-vae = DenseLinearLadderVAE(input_shape=(100, 28 * 28 * 1),
-                     latent_dim1=LATENT_DIM1,
-                     latent_dim2=LATENT_DIM2)
+vae = ConvolutionalVAE(input_shape=(100, 28, 28, 1), latent_dim=LATENT_DIM2)
 
 trainer = ModelTrainer(vae,
                        data_gen,
@@ -30,7 +28,7 @@ trainer = ModelTrainer(vae,
                        decay=1e-4,
                        beta=1)
 
-trainer.fit(250, 500, contrast=True, warm_up=True, make_gif=False)
+trainer.fit(150, 500, contrast=True, warm_up=True, make_gif=False)
 
 plotter = VAEPlotter(trainer, data_gen, data_gen_labels, grid_size=8)
 plotter.plot_contrast_correlations()
