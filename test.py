@@ -1,6 +1,6 @@
 import os
 from csnl import DataGeneratorWithLabels, DataGenerator, \
-    ConvolutionalVAE, VAEPlotter, ModelTrainer
+    DenseConvLadderVAE, VAEPlotter, ModelTrainer
 
 from shutil import copyfile
 
@@ -16,10 +16,12 @@ data_gen = DataGenerator(image_shape=(28, 28, 1),
                          '/csnl/data/textures_42000_28px.pkl',
                          contrast_normalize=True)
 
-LATENT_DIM1 = 16 * 4
-LATENT_DIM2 = 16
+LATENT_DIM1 = 16
+LATENT_DIM2 = 8
 
-vae = ConvolutionalVAE(input_shape=(100, 28, 28, 1), latent_dim=LATENT_DIM2)
+vae = DenseConvLadderVAE(input_shape=(100, 28, 28, 1),
+                         latent_dim1=LATENT_DIM1,
+                         latent_dim2=LATENT_DIM2)
 
 trainer = ModelTrainer(vae,
                        data_gen,

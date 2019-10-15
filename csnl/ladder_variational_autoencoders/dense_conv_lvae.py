@@ -12,6 +12,7 @@ class DenseConvLadderVAE(LadderVAE):
         x = PReLU()(x)
         x = Flatten()(x)
         x = Dense(128, activation='relu')(x)
+        x = Dense(self.latent_dim1)(x)
         encoder = Model(input_img, x, name="conv_encoder_1")
         return encoder
 
@@ -40,7 +41,7 @@ class DenseConvLadderVAE(LadderVAE):
     def decoder1(self):
         latent1 = Input(shape=(self.latent_dim1, ))
         x = Dense(1296, activation='relu')(latent1)
-        x = Reshape((9, 9, 32))(x)
+        x = Reshape(target_shape=(9, 9, 16))(x)
         x = Conv2D(128, (2, 2), padding='valid')(x)  # 8 x 8 x 128
         x = PReLU()(x)
         x = UpSampling2D(size=(2, 2),
