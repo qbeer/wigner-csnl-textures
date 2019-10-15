@@ -28,7 +28,7 @@ trainer = ModelTrainer(vae,
                        decay=1e-4,
                        beta=1)
 
-trainer.fit(150, 500, contrast=True, warm_up=True, make_gif=False)
+trainer.fit(250, 500, contrast=True, warm_up=True, make_gif=False)
 
 plotter = VAEPlotter(trainer, data_gen, data_gen_labels, grid_size=8)
 plotter.plot_contrast_correlations()

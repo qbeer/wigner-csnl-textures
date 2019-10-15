@@ -58,8 +58,8 @@ class ModelTrainer:
             if self.beta:
                 plt.subplot(1, 2, 1)
             plt.title("Model loss")
-            plt.plot(self.history.history['loss'])
-            plt.plot(self.history.history['val_loss'])
+            plt.plot(self.history.history['loss'][1:])
+            plt.plot(self.history.history['val_loss'][:-1])
             plt.ylabel('Loss')
             plt.xlabel('Epoch')
             plt.legend(['train', 'validation'], loc='upper right')
