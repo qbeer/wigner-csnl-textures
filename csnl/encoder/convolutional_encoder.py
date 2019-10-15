@@ -19,19 +19,14 @@ class ConvolutionalEncoder(Encoder):
         latent = Input(shape=(self.latent_dim, ))
         x = Dense(243, activation='relu')(latent)
         x = Reshape((9, 9, 3))(x)
-        print(x)
         x = Conv2D(128, (2, 2), padding='valid')(x)  # 8 x 8 x 128
         x = PReLU()(x)
-        print(x)
         x = UpSampling2D(size=(2, 2),
                          interpolation='bilinear')(x)  # 16 x 16 x 128
-        print(x)
         x = Conv2D(256, (2, 2), padding='valid')(x)  # 15 x 15 x 256
         x = PReLU()(x)
-        print(x)
         x = UpSampling2D(size=(2, 2),
                          interpolation='bilinear')(x)  # 30 x 30 x 256
-        print(x)
         x = Conv2D(512, (2, 2), padding='valid')(x)  # 29 x 29 x 512
         x = PReLU()(x)
         reco = Conv2D(self.input_shape[-1], (2, 2),
