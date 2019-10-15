@@ -23,12 +23,12 @@ vae = ConvolutionalVAE(input_shape=(100, 28, 28, 1), latent_dim=LATENT_DIM2)
 
 trainer = ModelTrainer(vae,
                        data_gen,
-                       loss_fn="normal",
+                       loss_fn="normalDiag",
                        lr=5e-4,
                        decay=1e-4,
                        beta=1)
 
-trainer.fit(250, 500, contrast=True, warm_up=True, make_gif=False)
+trainer.fit(100, 500, contrast=True, warm_up=True, make_gif=False)
 
 plotter = VAEPlotter(trainer, data_gen, data_gen_labels, grid_size=8)
 plotter.plot_contrast_correlations()
