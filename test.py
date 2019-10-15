@@ -16,8 +16,8 @@ data_gen = DataGenerator(image_shape=(28, 28, 1),
                          '/csnl/data/textures_42000_28px.pkl',
                          contrast_normalize=True)
 
-LATENT_DIM1 = 16
-LATENT_DIM2 = 8
+LATENT_DIM1 = 16 * 4
+LATENT_DIM2 = 16
 
 vae = DenseConvLadderVAE(input_shape=(100, 28, 28, 1),
                          latent_dim1=LATENT_DIM1,
@@ -33,9 +33,10 @@ trainer = ModelTrainer(vae,
 trainer.fit(100, 500, contrast=True, warm_up=True, make_gif=False)
 
 plotter = VAEPlotter(trainer, data_gen, data_gen_labels, grid_size=8)
-plotter.plot_contrast_correlations()
+plotter.plot_contrast_correlations(LATENT_DIM1)
 plotter.plot_label_correlations()
 plotter.grid_plot()
 plotter.generate_samples()
+plotter.plot_td_bu_values(LATENT_DIM1)
 
 copyfile(os.getcwd() + "/test.py", os.getcwd() + "/results/test.py")
