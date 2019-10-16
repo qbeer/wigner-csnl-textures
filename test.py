@@ -34,9 +34,10 @@ trainer = ModelTrainer(vae,
 trainer.fit(100, 500, contrast=False, warm_up=False, make_gif=False)
 
 plotter = VAEPlotter(trainer, data_gen, data_gen_labels, grid_size=8)
-plotter.plot_contrast_correlations()
+plotter.plot_contrast_correlations(LATENT_DIM1)
 plotter.plot_label_correlations()
 plotter.grid_plot()
 plotter.generate_samples()
+plotter.plot_td_bu_values(LATENT_DIM1)
 
 copyfile(os.getcwd() + "/test.py", os.getcwd() + "/results/test.py")

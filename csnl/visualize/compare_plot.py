@@ -1,9 +1,11 @@
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+from matplotlib import transforms
 import numpy as np
 from keras.utils import to_categorical
 from scipy.stats import pearsonr
 import os
+import seaborn as sns
 
 
 class VAEPlotter:
@@ -127,21 +129,26 @@ class VAEPlotter:
                 _images[ind] = images[IMAGE_INDEX]
 
             try:
-                recos, z1, z1_mean, z1_sigma, z2, z_mean_BU, z_log_var_BU, z_mean_TD, z_log_var_TD = self.latent_model.predict(
+                recos, z1, z1_mean, z1_sigma, z2, z_mean_BU, z_log_sigma_BU, z_mean_TD, z_log_sigma_TD = self.latent_model.predict(
                     _images, batch_size=self.batch_size)
             except ValueError:
-                recos, z1, z1_mean, z1_sigma, z2, z_mean_BU, z_log_var_BU, z_mean_TD, z_log_var_TD = self.latent_model.predict(
+                recos, z1, z1_mean, z1_sigma, z2, z_mean_BU, z_log_sigma_BU, z_mean_TD, z_log_sigma_TD = self.latent_model.predict(
                     _images.reshape(self.batch_size, 28 * 28),
                     batch_size=self.batch_size)
 
-            self._plot_td_bu_comparisons(z_mean_BU, z_log_var_BU, z_mean_TD,
-                                         z_log_var_TD, _images, z1_mean,
+            self._plot_td_bu_comparisons(z_mean_BU, z_log_sigma_BU, z_mean_TD,
+                                         z_log_sigma_TD, _images, z1_mean,
                                          z1_sigma, recos, IMAGE_INDEX)
 
-    def _plot_td_bu_comparisons(self, z_mean_BU, z_log_var_BU, z_mean_TD,
-                                z_log_var_TD, _images, z1_mean, z1_sigma,
+            self._plot_vector_visualizations(z1_mean, z1_sigma, z_mean_TD,
+                                             z_log_sigma_TD, z_mean_BU,
+                                             z_log_sigma_BU, IMAGE_INDEX)
+
+    def _plot_td_bu_comparisons(self, z_mean_BU, z_log_sigma_BU, z_mean_TD,
+                                z_log_sigma_TD, _images, z1_mean, z1_sigma,
                                 recos, IMAGE_INDEX):
-        mean_and_vars = [[z_mean_BU, z_log_var_BU], [z_mean_TD, z_log_var_TD]]
+        mean_and_sigmas = [[z_mean_BU, z_log_sigma_BU],
+                           [z_mean_TD, z_log_sigma_TD]]
         names = ['Bottom up values', 'Top down values']
         for img_ind in range(_images.shape[0]):
             fig, axes = plt.subplots(3,
@@ -150,7 +157,7 @@ class VAEPlotter:
                                      sharey=False,
                                      figsize=(7, 9))
             for ind in range(0, 2):
-                mean, log_var = mean_and_vars[ind]
+                mean, log_sigma = mean_and_sigmas[ind]
                 axes[ind, 0].hist(z1_mean[img_ind],
                                   bins=10,
                                   alpha=0.2,
@@ -163,7 +170,7 @@ class VAEPlotter:
                                   bins=10,
                                   alpha=0.2,
                                   label="other")
-                axes[ind, 1].hist(np.exp(log_var[img_ind]),
+                axes[ind, 1].hist(np.exp(log_sigma[img_ind]),
                                   bins=10,
                                   alpha=0.2,
                                   label="other")
@@ -179,6 +186,59 @@ class VAEPlotter:
             plt.savefig(os.getcwd() + "/results/%d_TD_BU_COMPS_%d.png" %
                         (IMAGE_INDEX + 1, img_ind + 1),
                         dpi=50)
+            plt.close(fig)
+
+    def _plot_vector_visualizations(self, z1_mean, z1_sigma, z_mean_TD,
+                                    z_log_sigma_TD, z_mean_BU, z_log_sigma_BU,
+                                    IMAGE_INDEX):
+
+        tr = transforms.Affine2D().rotate_deg(90)
+
+        for img_ind in range(self.batch_size):
+            fig, axes = plt.subplots(1,
+                                     2,
+                                     sharex=False,
+                                     sharey=True,
+                                     figsize=(10, 4))
+            z_mu, z_sigma = z1_mean[img_ind], z1_sigma[img_ind]
+            mu_bu, mu_td = z_mean_BU[img_ind], z_mean_TD[img_ind]
+            sigma_bu, sigma_td = np.exp(z_log_sigma_BU[img_ind]), np.exp(
+                z_log_sigma_TD[img_ind])
+
+            mus = np.array([mu_bu, z_mu, mu_td]).reshape(z_mu.shape[0], 3).T
+            sigmas = np.array([sigma_bu, z_sigma,
+                               sigma_td]).reshape(z_sigma.shape[0], 3).T
+
+            g1 = sns.heatmap(mus,
+                             ax=axes[0],
+                             square=False,
+                             cmap=sns.diverging_palette(145,
+                                                        280,
+                                                        s=85,
+                                                        l=25,
+                                                        n=7))
+            g2 = sns.heatmap(sigmas,
+                             ax=axes[1],
+                             square=False,
+                             cmap=sns.diverging_palette(145,
+                                                        280,
+                                                        s=85,
+                                                        l=25,
+                                                        n=7))
+
+            title = ["Mean", "Standard deviation"]
+
+            for _ind, ax in enumerate([g1, g2]):
+                tl = ['bottom up', 'z1', 'top down']
+                ax.set_yticklabels(tl, rotation=45)
+                tlx = ax.get_xticklabels()
+                ax.set_xticklabels(tlx, rotation=0)
+                ax.set_title(title[_ind])
+
+            fig.tight_layout()
+            plt.savefig(os.getcwd() + "/results/%d_vector_comparisons_%d.png" %
+                        (IMAGE_INDEX + 1, img_ind + 1),
+                        dpi=100)
             plt.close(fig)
 
     def plot_label_correlations(self):

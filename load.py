@@ -21,8 +21,8 @@ data_gen = DataGenerator(image_shape=(28, 28, 1),
                          whiten=False,
                          contrast_normalize=True)
 
-LATENT_DIM1 = 16
-LATENT_DIM2 = 8
+LATENT_DIM1 = 16 * 4
+LATENT_DIM2 = 16
 
 vae = DenseAutoEncoder(
     input_shape=(16, 28 * 28 * 1),
