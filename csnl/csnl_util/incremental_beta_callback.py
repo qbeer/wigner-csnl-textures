@@ -15,6 +15,5 @@ class IncrementalBeta(Callback):
         updated_beta = self.beta + self.beta_max / (3 * self.n_epochs // 7)
         if updated_beta < self.beta_max:
             self.beta = updated_beta
-            print("Beta updated : ", self.beta)
         else:
             self.beta = self.beta_max

@@ -12,14 +12,14 @@ data_gen_labels = DataGeneratorWithLabels(image_shape=(28, 28, 1),
                                           file_path=os.getcwd() +
                                           '/csnl/data/textures_42000_28px.pkl',
                                           whiten=False,
-                                          contrast_normalize=True)
+                                          contrast_normalize=False)
 
 data_gen = DataGenerator(image_shape=(28, 28, 1),
                          batch_size=16,
                          file_path=os.getcwd() +
                          '/csnl/data/textures_42000_28px.pkl',
                          whiten=False,
-                         contrast_normalize=True)
+                         contrast_normalize=False)
 
 LATENT_DIM1 = 16 * 4
 LATENT_DIM2 = 16

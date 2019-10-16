@@ -3,6 +3,7 @@ import numpy as np
 from .data_loader import DataLoader
 import os
 
+
 class DataGenerator:
     def __init__(self,
                  image_shape,
@@ -11,7 +12,8 @@ class DataGenerator:
                  binarize=False,
                  whiten=False,
                  contrast_normalize=False):
-        self.DATA_LOADER = DataLoader(file_path, binarize, whiten, contrast_normalize)
+        self.DATA_LOADER = DataLoader(file_path, binarize, whiten,
+                                      contrast_normalize)
         self.IMAGE_SHAPE = image_shape
         self.BATCH_SIZE = batch_size
         self.DATA_GENERATOR = ImageDataGenerator()

@@ -136,13 +136,13 @@ class VAEPlotter:
                     _images.reshape(self.batch_size, 28 * 28),
                     batch_size=self.batch_size)
 
-            self._plot_td_bu_comparisons(z_mean_BU, z_log_sigma_BU, z_mean_TD,
-                                         z_log_sigma_TD, _images, z1_mean,
-                                         z1_sigma, recos, IMAGE_INDEX)
-
             self._plot_vector_visualizations(z1_mean, z1_sigma, z_mean_TD,
                                              z_log_sigma_TD, z_mean_BU,
                                              z_log_sigma_BU, IMAGE_INDEX)
+
+            self._plot_td_bu_comparisons(z_mean_BU, z_log_sigma_BU, z_mean_TD,
+                                         z_log_sigma_TD, _images, z1_mean,
+                                         z1_sigma, recos, IMAGE_INDEX)
 
     def _plot_td_bu_comparisons(self, z_mean_BU, z_log_sigma_BU, z_mean_TD,
                                 z_log_sigma_TD, _images, z1_mean, z1_sigma,
@@ -159,19 +159,19 @@ class VAEPlotter:
             for ind in range(0, 2):
                 mean, log_sigma = mean_and_sigmas[ind]
                 axes[ind, 0].hist(z1_mean[img_ind],
-                                  bins=10,
-                                  alpha=0.2,
+                                  bins=20,
+                                  alpha=0.6,
                                   label="z1")
                 axes[ind, 1].hist(z1_sigma[img_ind],
-                                  bins=10,
-                                  alpha=0.2,
+                                  bins=20,
+                                  alpha=0.6,
                                   label="z1")
                 axes[ind, 0].hist(mean[img_ind],
-                                  bins=10,
+                                  bins=20,
                                   alpha=0.2,
                                   label="other")
                 axes[ind, 1].hist(np.exp(log_sigma[img_ind]),
-                                  bins=10,
+                                  bins=20,
                                   alpha=0.2,
                                   label="other")
                 axes[ind, 0].set_title(names[ind] + " - mean")
@@ -198,8 +198,8 @@ class VAEPlotter:
             fig, axes = plt.subplots(1,
                                      2,
                                      sharex=False,
-                                     sharey=True,
-                                     figsize=(10, 4))
+                                     sharey=False,
+                                     figsize=(20, 5))
             z_mu, z_sigma = z1_mean[img_ind], z1_sigma[img_ind]
             mu_bu, mu_td = z_mean_BU[img_ind], z_mean_TD[img_ind]
             sigma_bu, sigma_td = np.exp(z_log_sigma_BU[img_ind]), np.exp(
@@ -211,7 +211,8 @@ class VAEPlotter:
 
             g1 = sns.heatmap(mus,
                              ax=axes[0],
-                             square=False,
+                             cbar_kws=dict(use_gridspec=False,
+                                           location="bottom"),
                              cmap=sns.diverging_palette(145,
                                                         280,
                                                         s=85,
@@ -219,7 +220,8 @@ class VAEPlotter:
                                                         n=7))
             g2 = sns.heatmap(sigmas,
                              ax=axes[1],
-                             square=False,
+                             cbar_kws=dict(use_gridspec=False,
+                                           location="bottom"),
                              cmap=sns.diverging_palette(145,
                                                         280,
                                                         s=85,
@@ -234,8 +236,8 @@ class VAEPlotter:
                 tlx = ax.get_xticklabels()
                 ax.set_xticklabels(tlx, rotation=0)
                 ax.set_title(title[_ind])
-
-            fig.tight_layout()
+                ax.hlines([0, 1, 2], *ax.get_xlim())
+            #fig.tight_layout()
             plt.savefig(os.getcwd() + "/results/%d_vector_comparisons_%d.png" %
                         (IMAGE_INDEX + 1, img_ind + 1),
                         dpi=100)
