@@ -89,3 +89,19 @@ class DataGeneratorWithLabels:
         return self.DATA_GENERATOR.flow(self.TRAIN,
                                         self.TRAIN_LABELS,
                                         batch_size=self.BATCH_SIZE)
+
+    def contrast_flow(self):
+        def train_generator(_it):
+            while True:
+                batch_x, batch_labels = next(_it)
+                yield self._contrast(batch_x), batch_labels
+
+        return train_generator(self.flow())
+
+    def _contrast(self, images_x):
+        contrasted_images_x = np.zeros(shape=images_x.shape)
+        for ind in range(images_x.shape[0]):
+            r_contrast = np.random.rand() * 2.
+            contrasted_images_x[ind] = np.clip(
+                r_contrast * (images_x[ind] - 0.5) + 0.5, 0, 1)
+        return contrasted_images_x
