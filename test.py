@@ -1,6 +1,6 @@
 import os
 from csnl import DataGeneratorWithLabels, DataGenerator, \
-    DenseAutoEncoder, ConvolutionalAutoEncoder, VAEPlotter, ModelTrainer
+    DenseVAE, VAEPlotter, ModelTrainer
 
 from shutil import copyfile
 
@@ -19,19 +19,19 @@ data_gen = DataGenerator(image_shape=(28, 28, 1),
 LATENT_DIM1 = 16 * 4
 LATENT_DIM2 = 16
 
-vae = ConvolutionalAutoEncoder(
-    input_shape=(100, 28, 28, 1),
+vae = DenseVAE(
+    input_shape=(100, 28 * 28),
     #latent_dim1=LATENT_DIM1,
     latent_dim=LATENT_DIM2)
 
 trainer = ModelTrainer(vae,
                        data_gen,
-                       loss_fn="normalDiag",
+                       loss_fn="normal",
                        lr=5e-4,
                        decay=1e-4,
-                       beta=None)
+                       beta=1)
 
-trainer.fit(100, 500, contrast=False, warm_up=True, make_gif=False)
+trainer.fit(100, 500, contrast=True, warm_up=True, make_gif=False)
 
 plotter = VAEPlotter(trainer, data_gen, data_gen_labels, grid_size=8)
 plotter.plot_contrast_correlations(LATENT_DIM1)
