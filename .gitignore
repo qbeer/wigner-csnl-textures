@@ -14,6 +14,7 @@ tmp/
 test_runs/*/*.h5
 test_runs/*/*.gif
 results/
+gan_images/
 
 
 # Byte-compiled / optimized / DLL files
