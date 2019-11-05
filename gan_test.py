@@ -2,12 +2,17 @@
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
+import os
+
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+
 import tensorflow as tf
 tf.enable_eager_execution()
 import tensorflow_probability as tfp
 tfd = tfp.distributions
 
 import matplotlib.pyplot as plt
+plt.rcParams.update({'font.size': 18})
 
 NOISE_DIM = 16
 N_EXAMPLES = 16
@@ -33,8 +38,7 @@ generator = tf.keras.models.Sequential(layers=[
                                                          2), padding='same'),
     tf.keras.layers.BatchNormalization(),
     tf.keras.layers.ReLU(),
-    tf.keras.layers.Conv2DTranspose(
-        1, (2, 2), strides=(1, 1), padding='same', activation='sigmoid')
+    tf.keras.layers.Conv2DTranspose(1, (2, 2), strides=(1, 1), padding='same')
 ])
 
 discriminator = tf.keras.models.Sequential(layers=[
@@ -53,7 +57,8 @@ discriminator = tf.keras.models.Sequential(layers=[
 
 
 def generator_loss(generated):
-    return tf.losses.sigmoid_cross_entropy(tf.ones_like(generated), generated)
+    return tf.losses.sigmoid_cross_entropy(tf.ones_like(generated),
+                                           logits=generated)
 
 
 def discriminator_loss(real, generated):
@@ -80,9 +85,9 @@ def train_step(images, batch_size, noise_dim=NOISE_DIM):
     grads_of_gen = gen_tape.gradient(gen_loss, generator.variables)
     grads_of_disc = disc_tape.gradient(disc_loss, discriminator.variables)
 
-    tf.train.AdamOptimizer(1e-4).apply_gradients(
+    tf.train.AdamOptimizer(5e-4).apply_gradients(
         zip(grads_of_gen, generator.variables))
-    tf.train.AdamOptimizer(1e-4).apply_gradients(
+    tf.train.AdamOptimizer(5e-4).apply_gradients(
         zip(grads_of_disc, discriminator.variables))
 
 
@@ -98,12 +103,14 @@ def generate_and_save_images(current_epoch):
     plt.savefig('gan_images/generated_after_epoch_%d.png' % current_epoch)
 
 
-def train(dataset, batch_size, epochs=50, steps=100):
+def train(dataset, batch_size, epochs=250, steps=150):
     for epoch in range(epochs):
         for _ in range(steps):
             train_step(next(dataset), batch_size)
 
         generate_and_save_images(epoch + 1)
+    generator.save_weights('generator_weights.h5', overwrite=False)
+    discriminator.save_weights('discriminator_weights.h5', overwrite=False)
 
 
 import os
@@ -113,8 +120,8 @@ data_gen_labels = DataGenerator(image_shape=(28, 28, 1),
                                 batch_size=100,
                                 file_path=os.getcwd() +
                                 '/csnl/data/textures_42000_28px.pkl',
-                                contrast_normalize=False)
+                                contrast_normalize=True)
 
 data_iterator = data_gen_labels.flow()
 
-train(data_iterator, batch_size=100, epochs=50, steps=100)
+train(data_iterator, batch_size=100)

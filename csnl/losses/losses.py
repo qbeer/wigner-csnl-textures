@@ -64,7 +64,7 @@ class Losses:
             labels=x_true, logits=x_reco) + self.KL_divergence(None, None)
 
     def _bernoulli(self, x_true, x_reco):
-        return -tf.reduce_mean(tfd.Bernoulli(
+        return -tf.reduce_sum(tfd.Bernoulli(
             logits=x_reco)._log_prob(x_true)) + self.KL_divergence(None, None)
 
     """

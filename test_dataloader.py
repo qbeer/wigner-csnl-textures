@@ -18,6 +18,7 @@ label_datagen = DataGeneratorWithLabels(image_shape=(28, 28, 1),
                                         contrast_normalize=True)
 
 import matplotlib.pyplot as plt
+plt.rcParams.update({'font.size': 18})
 
 images, labels = next(datagen.flow())
 

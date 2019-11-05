@@ -1,6 +1,7 @@
 from keras.callbacks import Callback
 import numpy as np
 import matplotlib.pyplot as plt
+plt.rcParams.update({'font.size': 18})
 import os
 import imageio
 
@@ -11,8 +12,8 @@ class GifCallBack(Callback):
         self.generator = generator
         self.grid_size = grid_size
         self.latent_dim = latent_dim
-        self.latent_inputs = np.random.normal(
-            size=(grid_size*grid_size, latent_dim))
+        self.latent_inputs = np.random.normal(size=(grid_size * grid_size,
+                                                    latent_dim))
 
     def on_epoch_end(self, epoch, logs=None):
         self._make_gif(epoch)
@@ -28,8 +29,11 @@ class GifCallBack(Callback):
     def _make_gif(self, epoch):
         recos = self._plot_samples(self.latent_inputs)
 
-        fig, axes = plt.subplots(
-            self.grid_size, self.grid_size, sharex=True, sharey=True, figsize=(11, 11))
+        fig, axes = plt.subplots(self.grid_size,
+                                 self.grid_size,
+                                 sharex=True,
+                                 sharey=True,
+                                 figsize=(11, 11))
 
         for ind, ax in enumerate(axes.flatten()):
             ax.imshow(recos[ind], interpolation='none')
@@ -41,11 +45,12 @@ class GifCallBack(Callback):
 
     def _plot_samples(self, latent_inputs):
         recos = self.generator.predict(
-            latent_inputs[:self.grid_size*self.grid_size].reshape(self.grid_size**2, self.latent_dim))
+            latent_inputs[:self.grid_size * self.grid_size].reshape(
+                self.grid_size**2, self.latent_dim))
 
-        if np.prod(recos[0].shape) / (28*28) != 1:
-            recos = recos.reshape(
-                self.grid_size**2, 28, 28, int(np.prod(recos[0].shape) / (28*28)))
+        if np.prod(recos[0].shape) / (28 * 28) != 1:
+            recos = recos.reshape(self.grid_size**2, 28, 28,
+                                  int(np.prod(recos[0].shape) / (28 * 28)))
         else:
             recos = recos.reshape(self.grid_size**2, 28, 28)
 

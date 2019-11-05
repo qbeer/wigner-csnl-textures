@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+plt.rcParams.update({'font.size': 18})
 from keras.models import load_model
 import os
 from ..visualize import GifCallBack
@@ -63,7 +64,7 @@ class ModelTrainer:
             plt.ylabel('Loss')
             plt.xlabel('Epoch')
             plt.legend(['train', 'validation'], loc='upper right')
-            if self.beta != None:
+            if self.beta > 1e-12:
                 plt.subplot(1, 2, 2)
                 plt.title("KL-divergence with beta_max = %.2f " % self.beta)
                 plt.plot(self.history.history['KL_divergence'])

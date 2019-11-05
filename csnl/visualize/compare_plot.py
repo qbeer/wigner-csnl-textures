@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+plt.rcParams.update({'font.size': 18})
 import matplotlib.gridspec as gridspec
 from matplotlib import transforms
 import numpy as np
@@ -38,7 +39,7 @@ class VAEPlotter:
         reco = [reco_train, reco_test]
         images = [self.train_images, self.test_images]
 
-        fig = plt.figure(figsize=(14, 7))
+        fig = plt.figure(figsize=(20, 10))
         outer = gridspec.GridSpec(1, 2, wspace=0.1, hspace=0.1)
 
         for outer_ind in range(2):
@@ -52,7 +53,7 @@ class VAEPlotter:
                 ax = plt.Subplot(fig, inner[inner_ind])
                 if inner_ind % 2 == 0:
                     if inner_ind < 4:
-                        ax.set_title('Reconstructed')
+                        ax.set_title('Reco.')
                     ax.imshow(reco[outer_ind][inner_ind].reshape(
                         *self.image_shape),
                               interpolation='none',
@@ -60,7 +61,7 @@ class VAEPlotter:
                               vmax=1)
                 else:
                     if inner_ind < 4:
-                        ax.set_title(' <- Original')
+                        ax.set_title('<- Orig.')
                     ax.imshow(images[outer_ind][inner_ind - 1].reshape(
                         *self.image_shape),
                               interpolation='none',
@@ -102,7 +103,7 @@ class VAEPlotter:
                                  self.grid_size,
                                  sharex=True,
                                  sharey=True,
-                                 figsize=(11, 11))
+                                 figsize=(14, 14))
 
         if np.prod(recos[0].shape) / (28 * 28) != 1:
             recos = recos.reshape(self.grid_size * self.grid_size, 28, 28,
@@ -120,12 +121,12 @@ class VAEPlotter:
         plt.savefig(os.getcwd() + "/results/generated_samples.png", dpi=50)
         plt.show()
 
-    def plot_td_bu_values(self, latent_dim1):
+    def plot_td_bu_values(self, latent_dim1, size):
+        assert size < self.batch_size, "Size must be smaller than batch size!"
         images, _ = next(self.datagen.flow())
         for IMAGE_INDEX in range(images.shape[0]):
             _images = np.copy(images)
-            for ind in range(
-                    images.shape[0]):  # predict same element of the batch
+            for ind in range(size):  # predict same element of the batch
                 _images[ind] = images[IMAGE_INDEX]
 
             try:
@@ -136,26 +137,36 @@ class VAEPlotter:
                     _images.reshape(self.batch_size, 28 * 28),
                     batch_size=self.batch_size)
 
+            recos = recos[:size]
+            z1 = z1[:size]
+            z1_mean = z1_mean[:size]
+            z1_sigma = z1_sigma[:size]
+            z2 = z2[:size]
+            z_mean_BU = z_mean_BU[:size]
+            z_log_sigma_BU = z_log_sigma_BU[:size]
+            z_mean_TD = z_mean_TD[:size]
+            z_log_sigma_TD = z_log_sigma_TD[:size]
+
             self._plot_vector_visualizations(z1_mean, z1_sigma, z_mean_TD,
                                              z_log_sigma_TD, z_mean_BU,
-                                             z_log_sigma_BU, IMAGE_INDEX)
+                                             z_log_sigma_BU, IMAGE_INDEX, size)
 
             self._plot_td_bu_comparisons(z_mean_BU, z_log_sigma_BU, z_mean_TD,
                                          z_log_sigma_TD, _images, z1_mean,
-                                         z1_sigma, recos, IMAGE_INDEX)
+                                         z1_sigma, recos, IMAGE_INDEX, size)
 
     def _plot_td_bu_comparisons(self, z_mean_BU, z_log_sigma_BU, z_mean_TD,
                                 z_log_sigma_TD, _images, z1_mean, z1_sigma,
-                                recos, IMAGE_INDEX):
+                                recos, IMAGE_INDEX, size):
         mean_and_sigmas = [[z_mean_BU, z_log_sigma_BU],
                            [z_mean_TD, z_log_sigma_TD]]
         names = ['Bottom up values', 'Top down values']
-        for img_ind in range(_images.shape[0]):
+        for img_ind in range(size):
             fig, axes = plt.subplots(3,
                                      2,
                                      sharex=False,
                                      sharey=False,
-                                     figsize=(7, 9))
+                                     figsize=(12, 19))
             for ind in range(0, 2):
                 mean, log_sigma = mean_and_sigmas[ind]
                 axes[ind, 0].hist(z1_mean[img_ind],
@@ -183,23 +194,23 @@ class VAEPlotter:
             axes[2, 1].imshow(recos[img_ind].reshape(28, 28))
             axes[2, 1].set_title('Reconstructed image')
             fig.tight_layout()
-            plt.savefig(os.getcwd() + "/results/%d_TD_BU_COMPS_%d.png" %
+            plt.savefig(os.getcwd() + "/results/stats/%d_TD_BU_COMPS_%d.png" %
                         (IMAGE_INDEX + 1, img_ind + 1),
                         dpi=50)
             plt.close(fig)
 
     def _plot_vector_visualizations(self, z1_mean, z1_sigma, z_mean_TD,
                                     z_log_sigma_TD, z_mean_BU, z_log_sigma_BU,
-                                    IMAGE_INDEX):
+                                    IMAGE_INDEX, size):
 
         tr = transforms.Affine2D().rotate_deg(90)
 
-        for img_ind in range(self.batch_size):
+        for img_ind in range(size):
             fig, axes = plt.subplots(1,
                                      2,
                                      sharex=False,
                                      sharey=False,
-                                     figsize=(20, 5))
+                                     figsize=(25, 12))
             z_mu, z_sigma = z1_mean[img_ind], z1_sigma[img_ind]
             mu_bu, mu_td = z_mean_BU[img_ind], z_mean_TD[img_ind]
             sigma_bu, sigma_td = np.exp(z_log_sigma_BU[img_ind]), np.exp(
@@ -233,12 +244,12 @@ class VAEPlotter:
             for _ind, ax in enumerate([g1, g2]):
                 tl = ['bottom up', 'z1', 'top down']
                 ax.set_yticklabels(tl, rotation=45)
-                tlx = ax.get_xticklabels()
-                ax.set_xticklabels(tlx, rotation=0)
+                ax.set_xticklabels([], rotation=0)
                 ax.set_title(title[_ind])
                 ax.hlines([0, 1, 2], *ax.get_xlim())
             #fig.tight_layout()
-            plt.savefig(os.getcwd() + "/results/%d_vector_comparisons_%d.png" %
+            plt.savefig(os.getcwd() +
+                        "/results/stats/%d_vector_comparisons_%d.png" %
                         (IMAGE_INDEX + 1, img_ind + 1),
                         dpi=100)
             plt.close(fig)
@@ -262,7 +273,7 @@ class VAEPlotter:
         labels = to_categorical(labels)
 
         for cat in range(labels[0].shape[0]):
-            fig = plt.figure(figsize=(10, 8))
+            fig = plt.figure(figsize=(12, 9))
             correlations = []
 
             for i in range(self._latent_dim):
@@ -278,12 +289,13 @@ class VAEPlotter:
                             for x in np.abs(correlations[:, 0])
                         ])
 
-            plt.hlines(y=.4, xmin=0, xmax=self._latent_dim)
-            plt.hlines(y=-.4, xmin=0, xmax=self._latent_dim)
-            plt.xlim(0, self._latent_dim)
+            plt.hlines(y=.4, xmin=-.1, xmax=self._latent_dim)
+            plt.hlines(y=-.4, xmin=-.1, xmax=self._latent_dim)
+            plt.xlim(-.1, self._latent_dim)
             plt.xticks(np.arange(1, self._latent_dim, 2))
-            plt.xlabel('Latent parameters')
+            plt.xlabel('Latents')
             plt.ylabel('Pearson-correlation')
+            plt.ylim((-1, 1))
             plt.savefig(os.getcwd() + "/results/cat-%d-to-z2-corr.png" %
                         (cat + 1),
                         dpi=50)
@@ -343,7 +355,7 @@ class VAEPlotter:
                             random_contrasts,
                             latent_name,
                             latent_dim=None):
-        fig = plt.figure(figsize=(10, 8))
+        fig = plt.figure(figsize=(12, 9))
 
         correlations = []
 
@@ -359,11 +371,12 @@ class VAEPlotter:
             range(correlations.shape[0]),
             correlations[:, 0],
             c=['b' if x >= 0.4 else 'r' for x in np.abs(correlations[:, 0])])
-        plt.hlines(y=.4, xmin=0, xmax=latent_dim)
-        plt.hlines(y=-.4, xmin=0, xmax=latent_dim)
-        plt.xlim(0, latent_dim)
+        plt.hlines(y=.4, xmin=-.1, xmax=latent_dim)
+        plt.hlines(y=-.4, xmin=-.1, xmax=latent_dim)
+        plt.xlim(-.1, latent_dim)
         plt.xticks(np.arange(1, latent_dim, 2))
-        plt.xlabel('Latent parameters')
+        plt.ylim((-1, 1))
+        plt.xlabel('Latents')
         plt.ylabel('Pearson-correlation')
         plt.savefig(os.getcwd() +
                     "/results/contrast-to-%s-corr.png" % latent_name,
@@ -379,6 +392,8 @@ class VAEPlotter:
                      ecolor='r',
                      fmt='o')
         plt.xticks(np.linspace(0, latent_dim, 17))
+        plt.xlim(-0.1, latent_dim)
+        plt.ylim((-5, 5))
         plt.title('Mean and standard deviation of %s' % name)
         plt.savefig(os.getcwd() + "/results/mean-and-std-of-%s.png" % name,
                     dpi=50)

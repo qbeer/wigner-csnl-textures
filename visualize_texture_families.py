@@ -20,6 +20,7 @@ normalized, norm_labels = next(data_gen.flow())
 normalized_contrast, norm_labels_contrast = next(data_gen.contrast_flow())
 
 import matplotlib.pyplot as plt
+plt.rcParams.update({'font.size': 18})
 import numpy as np
 
 
@@ -43,9 +44,25 @@ def plot_uniqe(index_arr, image_arr, plot_name="default.png"):
     plt.close()
 
 
+def plot_individual(image_arr):
+    plt.figure(figsize=(5, 5))
+    rand_ind = np.random.randint(0, image_arr.shape[0])
+    plt.imshow(image_arr[rand_ind].reshape(28, 28),
+               vmin=0,
+               vmax=1,
+               interpolation=None)
+    plt.xticks([])
+    plt.yticks([])
+    plt.tight_layout(pad=0.1)
+    plt.savefig('texture.png')
+    plt.close()
+
+
 plot_uniqe(labels, default)
 plot_uniqe(labels_contrast, default_contrast, plot_name="default_contrast.png")
 plot_uniqe(norm_labels, normalized, plot_name="normalized.png")
 plot_uniqe(norm_labels_contrast,
            normalized_contrast,
            plot_name="normalized_contrast.png")
+
+plot_individual(default)

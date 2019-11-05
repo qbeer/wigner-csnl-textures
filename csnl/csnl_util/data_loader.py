@@ -81,7 +81,6 @@ class DataLoader:
             X_train, y_train, X_test, y_test = self.get_data_and_labels()
             return (X_train, X_test)
         except KeyError:
-            print('not getting here')
             X_train = self.data['train_images']
             X_test = self.data['test_images']
 
