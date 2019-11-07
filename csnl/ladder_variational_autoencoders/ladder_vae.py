@@ -63,6 +63,9 @@ class LadderVAE:
         log_sigma1 = args
         return K.pow(K.exp(log_sigma1), 2)
 
+    def _get_log_sigma_shape(self, input_shape):
+        return input_shape
+
     def _get_mean_gen(self, args):
         mean1, log_sigma1 = args
         return mean1 * K.pow(K.exp(log_sigma1) + 1e-12,
@@ -153,9 +156,13 @@ class LadderVAE:
         gen_mean, gen_log_sigma = mean_log_sigma_model_for_top_down_calc(gen2)
 
         # Combine mean and sigma for generative model
-        gen_sigma = Lambda(self._get_sigma_gen)([gen_log_sigma])
+        gen_sigma = Lambda(self._get_sigma_gen,
+                           output_shape=self._get_log_sigma_shape)(
+                               [gen_log_sigma])
 
-        gen_mean = Lambda(self._get_mean_gen)([gen_mean, gen_log_sigma])
+        gen_mean = Lambda(self._get_mean_gen,
+                          output_shape=self._get_log_sigma_shape)(
+                              [gen_mean, gen_log_sigma])
 
         # Samlping
         gen2 = Lambda(self._sample)([gen_mean, gen_sigma])

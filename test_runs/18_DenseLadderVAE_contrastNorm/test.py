@@ -33,7 +33,7 @@ trainer = ModelTrainer(vae,
                        decay=1e-5,
                        beta=1)
 
-trainer.fit(250, 500, contrast=True, warm_up=True, make_gif=False)
+trainer.fit(250, 500, contrast=False, warm_up=True, make_gif=False)
 
 plotter = VAEPlotter(trainer, data_gen, None, grid_size=8)
 plotter.plot_contrast_correlations(LATENT_DIM1)

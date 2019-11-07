@@ -10,7 +10,7 @@ distutils-pytest = "*"
 yapf = "*"
 
 [packages]
-keras = "==2.2.4"
+keras = "==2.2.5"
 tensorflow = "==1.14.0"
 tensorflow-gpu = "==1.14.0"
 sklearn = "*"
@@ -24,6 +24,7 @@ pydot = "*"
 graphviz = "*"
 scipy = "*"
 seaborn = "*"
+scikit-image = "*"
 
 [requires]
 python_version = "3.6"

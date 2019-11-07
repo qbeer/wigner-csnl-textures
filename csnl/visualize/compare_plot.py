@@ -7,6 +7,7 @@ from keras.utils import to_categorical
 from scipy.stats import pearsonr
 import os
 import seaborn as sns
+from skimage.filters import rank
 
 
 class VAEPlotter:
@@ -76,13 +77,21 @@ class VAEPlotter:
                     dpi=50)
         plt.show()
 
-    def generate_samples(self, vmax=1):
+    def generate_samples(self, vmax=1, hist=False):
         latent_inputs = np.random.normal(size=(self.grid_size * self.grid_size,
                                                self._latent_dim))
 
-        self._plot_samples(latent_inputs, vmax)
+        if hist:
+            self._plot_samples_and_histo(latent_inputs, vmax)
+        else:
+            self._plot_samples(latent_inputs, vmax)
 
-    def visualize_latent(self, axis=0, sweep_from=-1, sweep_to=1, vmax=1):
+    def visualize_latent(self,
+                         axis=0,
+                         sweep_from=-1,
+                         sweep_to=1,
+                         vmax=1,
+                         hist=False):
         sweep = np.linspace(sweep_from, sweep_to,
                             self.grid_size * self.grid_size)
         latent_inputs = np.random.normal(size=(1, self._latent_dim))
@@ -92,7 +101,10 @@ class VAEPlotter:
                                               self._latent_dim)
         latent_inputs[:, axis] = sweep
 
-        self._plot_samples(latent_inputs, vmax)
+        if hist:
+            self._plot_samples_and_histo(latent_inputs, vmax)
+        else:
+            self._plot_samples(latent_inputs, vmax)
 
     def _plot_samples(self, latent_inputs, vmax):
         recos = self.generator_model.predict(
@@ -119,6 +131,52 @@ class VAEPlotter:
         fig.suptitle("Generated samples on %d - dimensional grid" %
                      self._latent_dim)
         plt.savefig(os.getcwd() + "/results/generated_samples.png", dpi=50)
+        plt.show()
+
+    def _plot_samples_and_histo(self, latent_inputs, vmax):
+        recos = self.generator_model.predict(
+            latent_inputs[:self.grid_size * self.grid_size].reshape(
+                self.grid_size * self.grid_size, self._latent_dim))
+
+        if np.prod(recos[0].shape) / (28 * 28) != 1:
+            recos = recos.reshape(self.grid_size * self.grid_size, 28, 28,
+                                  int(np.prod(recos[0].shape) / (28 * 28)))
+        else:
+            recos = recos.reshape(self.grid_size * self.grid_size, 28, 28)
+
+        fig = plt.figure(figsize=(28, 14))
+        outer = gridspec.GridSpec(1, 2, wspace=0.1, hspace=0.1)
+
+        for outer_ind in range(2):
+            inner = gridspec.GridSpecFromSubplotSpec(
+                self.grid_size,
+                self.grid_size,
+                subplot_spec=outer[outer_ind],
+                wspace=0.095,
+                hspace=0.095)
+            for inner_ind in range(self.grid_size**2):
+                ax = plt.Subplot(fig, inner[inner_ind])
+                if outer_ind == 0:
+                    ax.imshow(recos[inner_ind].reshape(*self.image_shape),
+                              interpolation='none',
+                              vmin=0,
+                              vmax=1)
+                    ax.set_xticks([])
+                    ax.set_yticks([])
+                    fig.add_subplot(ax)
+                else:
+                    hist = np.histogram(recos[inner_ind],
+                                        bins=np.linspace(0, 1, 256))
+                    ax.plot(hist[1][:-1], hist[0], lw=0.7)
+                    ax.set_xticks([])
+                    ax.set_yticks([])
+                    ax.set_xlim((0, 1))
+                    ax.set_ylim((0, 20))
+                    fig.add_subplot(ax)
+
+        fig.suptitle("Samples and their histogram")
+        plt.savefig(os.getcwd() + "/results/generated_samples_with_histo.png",
+                    dpi=50)
         plt.show()
 
     def plot_td_bu_values(self, latent_dim1, size):
