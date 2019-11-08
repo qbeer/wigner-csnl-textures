@@ -25,6 +25,7 @@ graphviz = "*"
 scipy = "*"
 seaborn = "*"
 scikit-image = "*"
+pandas = "*"
 
 [requires]
 python_version = "3.6"

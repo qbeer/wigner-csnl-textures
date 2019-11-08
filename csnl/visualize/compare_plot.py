@@ -8,6 +8,7 @@ from scipy.stats import pearsonr
 import os
 import seaborn as sns
 from skimage.filters import rank
+import pandas as pd
 
 
 class VAEPlotter:
@@ -178,6 +179,41 @@ class VAEPlotter:
         plt.savefig(os.getcwd() + "/results/generated_samples_with_histo.png",
                     dpi=50)
         plt.show()
+
+    def plot_z1_z2_correlation(self, with_contrast=False):
+        if with_contrast:
+            images, _ = next(self.datagen.contrast_flow())
+        else:
+            images, _ = next(self.datagen.flow())
+        try:
+            recos, z1, z1_mean, z1_sigma, z2, z_mean_BU, z_log_sigma_BU, z_mean_TD, z_log_sigma_TD = self.latent_model.predict(
+                images, batch_size=self.batch_size)
+        except ValueError:
+            recos, z1, z1_mean, z1_sigma, z2, z_mean_BU, z_log_sigma_BU, z_mean_TD, z_log_sigma_TD = self.latent_model.predict(
+                images.reshape(self.batch_size, 28 * 28),
+                batch_size=self.batch_size)
+        # column-wise pearson correlation
+        N = z1.shape[0]
+
+        s_z1 = z1.sum(0)
+        s_z2 = z2.sum(0)
+
+        p1 = N * np.einsum('ij, ik->kj', z1, z2)
+        p2 = s_z1 * s_z2[:, None]
+        p3 = N * ((s_z2**2).sum(0)) - (s_z2**2)
+        p4 = N * ((s_z1**2).sum(0)) - (s_z1**2)
+
+        pcorr = ((p1 - p2) / np.sqrt(p4 * p3[:, None]))
+
+        f = plt.figure(figsize=(9, 15))
+        plt.matshow(pcorr.T, fignum=f.number, cmap='seismic', aspect="auto")
+        plt.xticks([])
+        plt.yticks([])
+        cb = plt.colorbar()
+        cb.ax.tick_params(labelsize=14, rotation=45)
+        plt.title('Correlation Matrix (max : %.5f)' % np.max(pcorr),
+                  fontsize=16)
+        plt.savefig('z1_z2_correlation.png')
 
     def plot_td_bu_values(self, latent_dim1, size):
         assert size < self.batch_size, "Size must be smaller than batch size!"

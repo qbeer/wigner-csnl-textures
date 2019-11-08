@@ -8,7 +8,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 
 from csnl import DataGeneratorWithLabels, DataGenerator, \
     DenseLinLinLadderVAE, DenseLadderVAE,ConvLadderVAE,\
-    VAEPlotter, ModelTrainer
+    VAEPlotter, ModelTrainer, DenseVAE, ConvolutionalVAE, DenseAutoEncoder
 
 data_gen = DataGenerator(image_shape=(28, 28, 1),
                          batch_size=100,
@@ -25,9 +25,9 @@ data_gen_labels = DataGeneratorWithLabels(image_shape=(28, 28, 1),
 LATENT_DIM1 = 16 * 8
 LATENT_DIM2 = 8
 
-vae = ConvLadderVAE(input_shape=(100, 28, 28, 1),
-                    latent_dim1=LATENT_DIM1,
-                    latent_dim2=LATENT_DIM2)
+vae = DenseAutoEncoder(input_shape=(100, 28*28),
+                   # latent_dim1=LATENT_DIM1,
+                    latent_dim=LATENT_DIM2)
 
 trainer = ModelTrainer(vae,
                        data_gen,
@@ -38,7 +38,7 @@ trainer = ModelTrainer(vae,
 
 plot_model(
     trainer.model,
-    to_file='data/ConvLadderVAE_vertical.png',
+    to_file='data/DenseAutoEncoder_vertical.png',
     show_shapes=True,
     show_layer_names=True,
     expand_nested=True,

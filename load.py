@@ -8,13 +8,13 @@ from csnl import DataGeneratorWithLabels, DataGenerator, \
     DenseLinLinLadderVAE, VAEPlotter, ModelTrainer
 
 data_gen = DataGenerator(image_shape=(28, 28, 1),
-                         batch_size=500,
+                         batch_size=5000,
                          file_path=os.getcwd() +
                          '/csnl/data/textures_42000_28px.pkl',
                          contrast_normalize=True)
 
 data_gen_labels = DataGeneratorWithLabels(image_shape=(28, 28, 1),
-                                          batch_size=500,
+                                          batch_size=5000,
                                           file_path=os.getcwd() +
                                           '/csnl/data/textures_42000_28px.pkl',
                                           contrast_normalize=True)
@@ -22,7 +22,7 @@ data_gen_labels = DataGeneratorWithLabels(image_shape=(28, 28, 1),
 LATENT_DIM1 = 16 * 8
 LATENT_DIM2 = 8
 
-vae = DenseLinLinLadderVAE(input_shape=(500, 28 * 28),
+vae = DenseLinLinLadderVAE(input_shape=(5000, 28 * 28),
                            latent_dim1=LATENT_DIM1,
                            latent_dim2=LATENT_DIM2)
 
@@ -43,6 +43,7 @@ plotter = VAEPlotter(trainer, data_gen, data_gen_labels, grid_size=8)
 #plotter.plot_contrast_correlations(LATENT_DIM1)
 #plotter.plot_label_correlations()
 #plotter.grid_plot()
-plotter.generate_samples(hist=True)
-plotter.visualize_latent(axis=4, sweep_from=1, sweep_to=2)
+#plotter.generate_samples(hist=True)
+#plotter.visualize_latent(axis=4, sweep_from=1, sweep_to=2)
 #plotter.plot_td_bu_values(LATENT_DIM1, size=5)
+plotter.plot_z1_z2_correlation(with_contrast=True)
