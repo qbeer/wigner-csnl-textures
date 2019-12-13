@@ -1,11 +1,9 @@
 # Wigner-CSNL textures
 
-### Variational Autoencoders on texture images for neuroscience
---------------------------
+## Variational Autoencoders on texture images for neuroscience
 
 * using different datasets such as mnist, fashion-mnist, cifar-10, textures, natural textures
 * binarization of images and zca-whitening is an option in loading time
-    * zca-whitening is implemented from Keras source code
 * training is available with random contrast generator
 * differenct autoencoder, VAE and LVAE implementations are available
 
@@ -27,7 +25,7 @@ LVAE implementation
 
 ```python
 from csnl import DataGeneratorWithLabels, DataGenerator, \
-    SmallDenseLadderVAE, VAEPlotter, ModelTrainer
+    DenseLinearLadderVAE, VAEPlotter, ModelTrainer
 
 data_gen_labels = DataGeneratorWithLabels(image_shape=(28, 28, 1),
                                           batch_size=100,
@@ -53,7 +51,7 @@ data_gen = DataGenerator(image_shape=(28, 28, 1),
 LATENT_DIM1 = 16 * 8
 LATENT_DIM2 = 16 * 2
 
-vae = SmallDenseLadderVAE(input_shape=(100, 28 * 28),
+vae = DenseLinearLadderVAE(input_shape=(100, 28 * 28),
                      latent_dim1=LATENT_DIM1,
                      latent_dim2=LATENT_DIM2)
 ```
@@ -86,12 +84,30 @@ plotter.generate_samples()
 
 * the plotter creates plots for analysis
 
-![reconstruction](test_runs/OLD_RESULTS/1_DenseLadderVAE_noContrastNormalization/reconstrunction_samples.png)
+![reconstruction](./OLD_RESULTS/21_DenseLinearLadderVAE_textures_noContrastNorm/reconstrunction_samples.png)
 
 Overfitting:
 
-![loss](test_runs/OLD_RESULTS/1_DenseLadderVAE_noContrastNormalization/loss.png)
+![loss](./OLD_RESULTS/21_DenseLinearLadderVAE_textures_noContrastNorm/loss.png)
 
 However, really good generated samples:
 
-![generated_samples](test_runs/OLD_RESULTS/1_DenseLadderVAE_noContrastNormalization/generated_samples.png)
+![generated_samples](./OLD_RESULTS/21_DenseLinearLadderVAE_textures_noContrastNorm/generated_samples.png)
+
+## Data
+
+* my data is available at Kaggle in `.pkl` format for CIFAR-10 (RGB), FashionMNIST, MNIST, textures, natural textures, etc.
+
+* [Kaggle dataset](https://www.kaggle.com/dumbo666/wigner-csnl-textures-mnist-format)
+
+## Detailed models, data
+
+* linear constraint on LVAE:
+
+![dense-lin-ladder-vae](data/DenseLinLinLadderVAE_vertical.png)
+
+* contrast normalization
+
+![default-contrast](data/default_contrast.png)
+
+![contrast-normalized](data/normalized_contrast.png)
