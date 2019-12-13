@@ -213,7 +213,7 @@ class VAEPlotter:
         cb.ax.tick_params(labelsize=14, rotation=45)
         plt.title('Correlation Matrix (max : %.5f)' % np.max(pcorr),
                   fontsize=16)
-        plt.savefig('z1_z2_correlation.png')
+        plt.savefig('results/z1_z2_correlation.png')
 
     def plot_td_bu_values(self, latent_dim1, size):
         assert size < self.batch_size, "Size must be smaller than batch size!"
